@@ -1,7 +1,7 @@
 /*
  * cAcinus.cpp
  *
- *  Created on: 28/04/2018
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -13,24 +13,27 @@
 #include "global_defs.hpp"
 #include "utils.hpp"
 #include "cAcinus.hpp"
+#include "cLumen.hpp"
 
-//cAcinus::cAcinus(std::string host_name, int rank, int c_rank, int c_count, int l_rank) {
 cAcinus::cAcinus(std::string host_name, int rank, int c_rank, int c_count) {
   my_rank = rank;
   cell_rank = c_rank;
   cell_count = c_count;
-  //lumen_rank = l_rank;
-  id = "a1";
+
+  id = "a1";             // "a1" hard coded for now
 
   out.open(id + ".out");
   out << "<Acinus> id: " << id << std::endl;
   out << "<Acinus> host_name: " << host_name << std::endl;
 
   utils::get_parameters(id, calciumParms, 1, p, out);
+
+  lumen = new cLumen(this, "l1"); // "l1" hard coded for now
 }
 
 cAcinus::~cAcinus() {
   out.close();
+  delete lumen;
 }
 
 // NOTE: mpi send to all first, then receive from all

@@ -1,7 +1,7 @@
 #----------------------------------
 # psim5 excludes
 
-psim5
+psim_coupled
 */results/*
 my*
 

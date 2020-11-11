@@ -1,2 +1,2 @@
-# psim5
+# psim_coupled
 parotid simulation

@@ -1,8 +1,8 @@
 ###########################################################################################
 ##
-## target platform: mahuika
+## target platforms: mahuika or iMac
 ##
-## assumes:
+## mahuika assumes:
 ##   ml gimkl/2017a
 ##   ml Eigen/3.3.4
 ##   ml SUNDIALS/4.0.0-gimkl-2017a
@@ -23,18 +23,19 @@ CPP = mpicxx
 #CPP_FLAGS =  $(CPP_DEFS) $(CPP_INCLUDES) -m64 -O3 -pg 
 
 ## optimised
-CPP_FLAGS =  $(CPP_DEFS) $(CPP_INCLUDES) -m64 -O3 -march=native -mtune=native 
+CPP_FLAGS =  $(CPP_DEFS) -m64 -O3 -march=native -mtune=native 
 
 ###########################################################################################
-## program
+## NOTE: uncomment lines for ONE platform
+#CPP_INCLUDES = -I/usr/include  # mahuika 
+##CPP_LIBS = -lsundials_cvodes  # mahjuika
+CPP_INCLUDES = -I/usr/local/include/eigen3 # iMac
 
-## Mahuika
-CPP_INCLUDES = -I/usr/include
-#CPP_LIBS = -lsundials_cvodes
+###########################################################################################
 
-EXE = ../run/psim5
+EXE = ../run/psim_coupled
 #OBJS = main.o utils.o cAcinus.o cLumen.o cCVodes.o cCell_flow.o cCell_calcium.o cCellMesh.o
-OBJS = main.o utils.o cAcinus.o cCell_calcium.o cCellMesh.o
+OBJS = main.o utils.o cAcinus.o cLumen.o cCell_calcium.o cCellMesh.o cCell_flow.o
 SRC = ./src
 
 all: $(EXE)
@@ -48,14 +49,14 @@ utils.o: $(SRC)/utils.cpp $(SRC)/utils.hpp
 cAcinus.o: $(SRC)/cAcinus.cpp $(SRC)/cAcinus.hpp
 	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
-#cLumen.o: $(SRC)/cLumen.cpp $(SRC)/cLumen.hpp
-#	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
+cLumen.o: $(SRC)/cLumen.cpp $(SRC)/cLumen.hpp
+	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
 #cCVodes.o: $(SRC)/cCVodes.cpp $(SRC)/cCVodes.hpp
 #	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
-#cCell_flow.o: $(SRC)/cCell_flow.cpp $(SRC)/cCell_flow.hpp
-#	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
+cCell_flow.o: $(SRC)/cCell_flow.cpp $(SRC)/cCell_flow.hpp
+	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
 cCell_calcium.o: $(SRC)/cCell_calcium.cpp $(SRC)/cCell_calcium.hpp
 	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<

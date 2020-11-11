@@ -1,7 +1,7 @@
 /*
  * cCell_flow.hpp
  *
- *  Created on: 16/12/2018
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -11,15 +11,19 @@
 #include <fstream>
 #include <string>
 
+class cCell_calcium;
+
 #include "global_defs.hpp"
 
 class cCell_flow {
 public:
-  cCell_flow(int my_index, tCalcs p[], std::ofstream& out);
+  //cCell_flow(int my_index, tCalcs p[], std::ofstream& out);
+  cCell_flow(cCell_calcium* parent);
   ~cCell_flow();
   void run();
 
 private:
+  cCell_calcium* parent;
   tCalcs *p; // the fluid flow parameters array
   int my_index;
   tCalcs omega; // volume
@@ -29,7 +33,7 @@ private:
   tCalcs hc03;  // bicarbonate
   tCalcs h;     // hydrogen
   
-  tCalcs snd_recv(tCalcs t, tCalcs dt);
+  //tCalcs snd_recv(tCalcs t, tCalcs dt);
 };
 
 #endif /* CCELL_FLOW_H_ */

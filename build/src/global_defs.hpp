@@ -11,6 +11,7 @@
 #include <mpi.h>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <string>
 
 //************************************************************************ 
 // model sizes
@@ -83,7 +84,7 @@ enum parameter_types{ \
 
 //************************************************************************ 
 // the 3D calcium model parameters
-enum model_parameters{ \
+enum calcium_parameters{ \
   delT, totalT, Tstride, \
   PLCsrt, PLCfin, \
   c0, ip0, ce0, Gamma, \

@@ -1,7 +1,7 @@
 /*
  * cCell_calcium.cpp
  *
- *  Created on: 26/04/2018
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -18,6 +18,7 @@
 #include "global_defs.hpp"
 #include "utils.hpp"
 #include "cCellMesh.hpp"
+#include "cCell_flow.hpp"
 #include "cCell_calcium.hpp"
 
 cCell_calcium::cCell_calcium(std::string host_name, int my_rank, int a_rank) {
@@ -54,6 +55,8 @@ cCell_calcium::cCell_calcium(std::string host_name, int my_rank, int a_rank) {
   ca_file.open(id + "_ca.bin", std::ios::binary);
   ip3_file.open(id + "_ip3.bin", std::ios::binary);
   cer_file.open(id + "_cer.bin", std::ios::binary);
+  
+  flow = new cCell_flow(this);
 }
 
 cCell_calcium::~cCell_calcium() {
@@ -62,6 +65,7 @@ cCell_calcium::~cCell_calcium() {
   cer_file.close();
   out.close();
   delete mesh;
+  delete flow;
 }
 
 void cCell_calcium::init_solvec(){

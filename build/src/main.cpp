@@ -1,7 +1,7 @@
 /*
  * main.cpp
  *
- *  Created on: 26/04/2018
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -12,15 +12,12 @@
 
 #include "global_defs.hpp"
 #include "cAcinus.hpp"
-//#include "cLumen.hpp"
 #include "cCell_calcium.hpp"
 
 // one acinus + seven cells (for now, UNTIL WE ADD SOME MORE)
 #define ACINUS_RANK 0
 #define CELLS_RANK 1
-#define LUMEN_RANK (CELLS_RANK + CELLS_COUNT)
-//#define MPI_NODES (CELLS_COUNT + 2)
-#define MPI_NODES (CELLS_COUNT + 1)
+#define MPI_NODES (CELLS_RANK + CELLS_COUNT)
 
 #define TEMP_SIZE 40
 
@@ -48,18 +45,11 @@ int main(int argc,char **args){
   // This code is running as EITHER an mpi process for the acinus,
   if(commRank == ACINUS_RANK){
     std::cout << "<main> rank " << commRank << " running..." << std::endl;
-    //cAcinus* acinus = new cAcinus(host_name, commRank, CELLS_RANK, CELLS_COUNT, LUMEN_RANK);
     cAcinus* acinus = new cAcinus(host_name, commRank, CELLS_RANK, CELLS_COUNT);
     acinus->run();
     delete acinus;
   }
-  // OR an mpi process for the lumenal flow,
-//  else if(commRank == LUMEN_RANK){ 
-//    cLumen* lumen = new cLumen(host_name, commRank, CELLS_COUNT, ACINUS_RANK);
-//    lumen->run();
-//    delete lumen;
-//  }
-  // OR an mpi process for cellular calcium.
+  // OR an mpi process for a cell.
   else{
     cCell_calcium* cell = new cCell_calcium(host_name, commRank, ACINUS_RANK);
     cell->run();

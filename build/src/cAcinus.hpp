@@ -1,7 +1,7 @@
 /*
  * cAcinus.hpp
  *
- *  Created on: 26/04/2018
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -11,9 +11,12 @@
 #include <fstream>
 #include <string>
 
+class cLumen;
+
 #include "global_defs.hpp"
 
 class cAcinus {
+friend class cLumen;
 public:
   //cAcinus(std::string host_name, int my_rank, int cell_rank, int cell_count, int lumen_rank);
   cAcinus(std::string host_name, int my_rank, int cell_rank, int cell_count);
@@ -26,6 +29,7 @@ private:
   tCalcs p[PCOUNT]; // the calcium model parameters array
   //int my_rank, cell_rank, cell_count, lumen_rank;
   int my_rank, cell_rank, cell_count;
+  cLumen* lumen;
 
   tCalcs snd_recv(tCalcs t, tCalcs dt);
 };

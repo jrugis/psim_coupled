@@ -21,7 +21,7 @@ void utils::fatal_error(const std::string msg, std::ofstream& out){
   exit(1);
 }
 
-// NOTE: used by each of the acinus, lumen and cell objects
+// NOTE: used by each of the acinus, lumen, cell calcium and cell fluid objects
 void utils::get_parameters(const std::string file_id, int ptype, int cell_num, tCalcs* p, std::ofstream& out){
   std::string file_name = file_id + ".dat";
   std::ifstream model_file(file_name); // open the model parameters file

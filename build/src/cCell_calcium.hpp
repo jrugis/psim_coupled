@@ -1,7 +1,7 @@
 /*
  * cCell_calcium.hpp
  *
- *  Created on: 26/04/2018
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -15,6 +15,7 @@
 #include<Eigen/SparseCholesky>
 
 class cCellMesh;
+class cCell_flow;
 
 #include "global_defs.hpp"
 
@@ -37,6 +38,7 @@ struct cfc {int cell; int fcount;}; // other cell, connected face count
 
 class cCell_calcium {
 friend class cCellMesh;
+friend class cCell_flow;
 public:
   cCell_calcium(std::string host_name, int my_rank, int acinus_rank);
   ~cCell_calcium();
@@ -48,6 +50,7 @@ private:
   std::ofstream out, ca_file, ip3_file, cer_file;
   int cell_number, acinus_rank;
   cCellMesh* mesh;
+  cCell_flow* flow;
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<tCalcs>> solver;
   tCalcs p[PCOUNT]; // the model parameters array
   std::vector<cfc> cells; // vector of connected cells and face counts
