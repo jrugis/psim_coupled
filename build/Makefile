@@ -23,19 +23,20 @@ CPP = mpicxx
 #CPP_FLAGS =  $(CPP_DEFS) $(CPP_INCLUDES) -m64 -O3 -pg 
 
 ## optimised
-CPP_FLAGS =  $(CPP_DEFS) -m64 -O3 -march=native -mtune=native 
+CPP_FLAGS =  $(CPP_DEFS) -m64 -O3 -march=native -mtune=native -Wall -Wpedantic -g
 
 ###########################################################################################
 ## NOTE: uncomment lines for ONE platform
 #CPP_INCLUDES = -I/usr/include  # mahuika 
-##CPP_LIBS = -lsundials_cvodes  # mahjuika
 CPP_INCLUDES = -I/usr/local/include/eigen3 # iMac
+
+CPP_LIBS = -lsundials_cvodes
 
 ###########################################################################################
 
 EXE = ../run/psim_coupled
 #OBJS = main.o utils.o cAcinus.o cLumen.o cCVodes.o cCell_flow.o cCell_calcium.o cCellMesh.o
-OBJS = main.o utils.o cAcinus.o cLumen.o cCell_calcium.o cCellMesh.o cCell_flow.o
+OBJS = main.o utils.o cAcinus.o cLumen.o cLumenTree.o cCell_calcium.o cCellMesh.o cCell_flow.o
 SRC = ./src
 
 all: $(EXE)
@@ -50,6 +51,9 @@ cAcinus.o: $(SRC)/cAcinus.cpp $(SRC)/cAcinus.hpp
 	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
 cLumen.o: $(SRC)/cLumen.cpp $(SRC)/cLumen.hpp
+	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
+
+cLumenTree.o: $(SRC)/cLumenTree.cpp $(SRC)/cLumenTree.hpp
 	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
 #cCVodes.o: $(SRC)/cCVodes.cpp $(SRC)/cCVodes.hpp

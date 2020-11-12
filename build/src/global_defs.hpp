@@ -40,79 +40,161 @@
 //************************************************************************ 
 // acinus to cell mpi message
 // delta time, current time, solver error
-enum acinus2cell{ \
-  dTime, cTime, sError, \
-  ACCOUNT};
+enum acinus2cell {dTime, cTime, sError, ACCOUNT};
 
 //************************************************************************ 
 // acinus to lumen mpi message
 // delta time, current time, apical calcium, basal calcium, cell volume
-enum acinus2lumen{ \
-  dlTime, clTime, aC, Bc, cV, \
-  ALCOUNT};
+enum acinus2lumen {dlTime, clTime, aC, Bc, cV, ALCOUNT};
 
 //************************************************************************ 
 // cell to cell mpi message
 // triangle index, value
-enum cell2cell{ \
-  tInd, tVal, \
-  C2CCOUNT};
+enum cell2cell { tInd, tVal, C2CCOUNT};
 
 //************************************************************************ 
 // cell to cell connectivity
 // this_triangle, other_cell, other_triangle
-enum cell_conn{ \
-  tTri, oCell, oTri, \
-  CCONNCOUNT};
+enum cell_conn {tTri, oCell, oTri, CCONNCOUNT};
 
 //************************************************************************ 
-// modelling typedefs
-typedef double tCoord;
-typedef double tDist;
-typedef double tCalcs;
-
-//************************************************************************ 
-// some convenience typedefs
-typedef Eigen::Matrix<tCalcs, Eigen::Dynamic, Eigen::Dynamic> MatrixXXC;
-typedef Eigen::Matrix<tCalcs, Eigen::Dynamic, 1> MatrixX1C;
-typedef Eigen::SparseMatrix<tCalcs> SparseMatrixTCalcs;
-
-//************************************************************************ 
-enum parameter_types{ \
-  calciumParms, flowParms, \
-  PTCOUNT};
+enum parameter_types{ calciumParms, flowParms, PTCOUNT};
 
 //************************************************************************ 
 // the 3D calcium model parameters
-enum calcium_parameters{ \
-  delT, totalT, Tstride, \
-  PLCsrt, PLCfin, \
-  c0, ip0, ce0, Gamma, \
-  Dc, Dp, De, Fc, Fip, \
-  d_RyR, V_RyR, K_RyR, K_RyR2, m_RyR, n_RyR, \
-  k_beta, K_p, K_c, K_h, kIPR, \
-  V_p, k_p, K_bar, \
-  d_PLC, V_3K, V_5K, K_PLC, K3K, V_PLC, \
-  h0, K_tau, tau_max, \
-  g0, K_hRyR, tau, \
-  PCOUNT};
+enum calcium_parameters {
+  delT,
+  totalT,
+  Tstride,
+  fluidFlow,
+  PLCsrt,
+  PLCfin,
+  APICALds,
+  APICALdl,
+  c0,
+  ip0,
+  ce0,
+  Gamma,
+  Dc,
+  Dp,
+  De,
+  Fc,
+  Fip,
+  d_RyR,
+  V_RyR,
+  K_RyR,
+  K_RyR2,
+  m_RyR,
+  n_RyR,
+  k_beta,
+  K_p,
+  K_c,
+  K_h,
+  k_IPR,
+  V_p,
+  k_p,
+  K_bar,
+  PLCds,
+  PLCdl,
+  V_3K,
+  V_5K,
+  K_PLC,
+  K3K,
+  V_PLC,
+  h0,
+  K_tau,
+  tau_max,
+  g0,
+  K_hRyR,
+  tau,
+  PCOUNT
+};
+
+//************************************************************************
+// the fluid flow model parameters
+enum fluid_flow_parameters {
+  odeSolver,
+  odeSolverAbsTol,
+  odeSolverRelTol,
+  aNkcc1,
+  a1,
+  a2,
+  a3,
+  a4,
+  r,
+  alpha1,
+  aNaK,
+  GtNa,
+  GtK,
+  GCl,
+  KCaCC,
+  eta1,
+  GK,
+  KCaKC,
+  eta2,
+  G1,
+  KNa,
+  KH,
+  G4,
+  KCl,
+  KB,
+  GB,
+  kn,
+  kp,
+  pHl,
+  pHi,
+  pHe,
+  HCO3l,
+  CO20,
+  Ul,
+  Cle,
+  Nae,
+  Ke,
+  HCO3e,
+  CO2e,
+  CO2l,
+  Hy,
+  La,
+  Lb,
+  Lt,
+  He,
+  Ie,
+  Hye,
+  St,
+  wl,
+  FPCOUNT
+};
+  
+//************************************************************************
+// some convenience typedefs
+typedef Eigen::Matrix<double, Eigen::Dynamic, 1> MatrixN1d;
+typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajorBit> MatrixN3d;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixNNd;
+typedef Eigen::SparseMatrix<double> SparceMatrixd;
+
+typedef Eigen::Matrix<int, Eigen::Dynamic, 1> MatrixN1i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 2, Eigen::RowMajorBit> MatrixN2i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajorBit> MatrixN3i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, 4, Eigen::RowMajorBit> MatrixN4i;
+typedef Eigen::Matrix<int, Eigen::Dynamic, CCONNCOUNT, Eigen::RowMajorBit> MatrixNCi;
+typedef Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> MatrixNNi;
+
+typedef Eigen::Vector3d Vector3d;
+typedef Eigen::Vector3i Vector3i;
+typedef Eigen::Vector4i Vector4i;
 
 //************************************************************************ 
-// the fluid flow model parameters
-enum fluid_flow_parameters{ \
-  aNkcc1, a1, a2, a3, a4, \
-  r, alpha1, aNaK, \
-  GtNa, GtK, \
-  GCl, KCaCC, eta1, \
-  GK, KCaKC, eta2, \
-  G1, KNa, KH, \
-  G4, KCl, KB, \
-  GB, kn, kp, \
-  pHl, pHi, pHe, HCO3l, CO20, Ul, Cle, Nae, \
-  Ke, HCO3e, CO2e, Hl, CO2l, Hy, \
-  La, Lb, Lt, \
-  FPCOUNT};
-  
+//************************************************************************
+// cell mesh values
+struct sMeshVals {
+  int vertices_count;
+  int surface_triangles_count;
+  int tetrahedrons_count;
+  MatrixN3d vertices;          // 3x coordinate
+  MatrixN3i surface_triangles; // 3x vertex
+  MatrixN4i tetrahedrons;      // 4x vertex
+};
+
 //************************************************************************ 
 // thermodynamic constants
 #define R 8.314462100000000

@@ -37,7 +37,7 @@ cAcinus::~cAcinus() {
 }
 
 // NOTE: mpi send to all first, then receive from all
-tCalcs cAcinus::snd_recv(tCalcs t, tCalcs dt) {
+double cAcinus::snd_recv(double t, double dt) {
   float msg[ACCOUNT]; 
   MPI_Status stat;
 
@@ -55,10 +55,10 @@ tCalcs cAcinus::snd_recv(tCalcs t, tCalcs dt) {
 }
 
 void cAcinus::run() {
-  tCalcs t = 0.0;
-  tCalcs solver_dt = p[delT];
-  tCalcs prev_dt = solver_dt;
-  tCalcs error;
+  double t = 0.0;
+  double solver_dt = p[delT];
+  double prev_dt = solver_dt;
+  double error;
   struct timespec start, end;
   double elapsed;
 

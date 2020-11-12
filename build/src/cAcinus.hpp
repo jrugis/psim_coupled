@@ -26,12 +26,12 @@ public:
 private:
   std::string id;
   std::ofstream out;
-  tCalcs p[PCOUNT]; // the calcium model parameters array
+  double p[PCOUNT]; // the calcium model parameters array
   //int my_rank, cell_rank, cell_count, lumen_rank;
   int my_rank, cell_rank, cell_count;
   cLumen* lumen;
 
-  tCalcs snd_recv(tCalcs t, tCalcs dt);
+  double snd_recv(double t, double dt);
 };
 
 #endif /* CACINUS_H_ */

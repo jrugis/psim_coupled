@@ -17,23 +17,23 @@ class cCell_calcium;
 
 class cCell_flow {
 public:
-  //cCell_flow(int my_index, tCalcs p[], std::ofstream& out);
+  //cCell_flow(int my_index, double p[], std::ofstream& out);
   cCell_flow(cCell_calcium* parent);
   ~cCell_flow();
   void run();
 
 private:
   cCell_calcium* parent;
-  tCalcs *p; // the fluid flow parameters array
+  double *p; // the fluid flow parameters array
   int my_index;
-  tCalcs omega; // volume
-  tCalcs na;    // sodium
-  tCalcs nk;    // potassium
-  tCalcs cl;    // chloride
-  tCalcs hc03;  // bicarbonate
-  tCalcs h;     // hydrogen
+  double omega; // volume
+  double na;    // sodium
+  double nk;    // potassium
+  double cl;    // chloride
+  double hc03;  // bicarbonate
+  double h;     // hydrogen
   
-  //tCalcs snd_recv(tCalcs t, tCalcs dt);
+  //double snd_recv(double t, double dt);
 };
 
 #endif /* CCELL_FLOW_H_ */
