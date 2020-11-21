@@ -8,11 +8,12 @@
 #ifndef CCELL_CACIUM_H_
 #define CCELL_CACIUM_H_
 
-#include <fstream>
-#include <string>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include<Eigen/SparseCholesky>
+#include <Eigen/SparseCholesky>
+#include <fstream>
+#include <string>
+#include <unordered_map>
 
 class cCellMesh;
 class cCell_flow;
@@ -21,12 +22,12 @@ class cCell_flow;
 
 #define DIFVARS 3 // number of diffusing node variables - c, ip, ce
 #define NONDIFVARS 2 // number of non-diffusing variables - g, h
-#define VARIABLES (DIFVARS+NONDIFVARS) // total number of node variables
-#define REF_MASS_SIZE 4   // reference mass dimension
+#define VARIABLES (DIFVARS + NONDIFVARS) // total number of node variables
+#define REF_MASS_SIZE 4 // reference mass dimension
 
-enum model_element_values{VOL_e, RYR_e, PLC_e, MODELECOUNT};  // element volume and spatial factors
-enum model_surface_values{AREA_s, MODELSCOUNT};  // surface triangle area
-enum model_node_values{BOOL_apical, MODELNCOUNT}; // apical (boolean)
+enum model_element_values { VOL_e, RYR_e, PLC_e, MODELECOUNT }; // element volume and spatial factors
+enum model_surface_values { AREA_s, MODELSCOUNT };              // surface triangle area
+enum model_node_values { BOOL_apical, MODELNCOUNT };            // apical (boolean)
 
 // some convenience typedefs
 typedef Eigen::Array<double, Eigen::Dynamic, 1> ArrayX1C;
@@ -34,17 +35,21 @@ typedef Eigen::Array<double, 1, DIFVARS> Array1VC;
 typedef Eigen::Array<double, REF_MASS_SIZE, REF_MASS_SIZE> ArrayRefMass;
 typedef Eigen::Triplet<double> Triplet;
 
-struct cfc {int cell; int fcount;}; // other cell, connected face count
+struct cfc {
+  int cell;
+  int fcount;
+}; // other cell, connected face count
 
 class cCell_calcium {
-friend class cCellMesh;
-friend class cCell_flow;
-public:
+  friend class cCellMesh;
+  friend class cCell_flow;
+
+  public:
   cCell_calcium(std::string host_name, int my_rank, int acinus_rank);
   ~cCell_calcium();
   void run();
 
-private:
+  private:
   std::string id;
   std::string acinus_id;
   std::ofstream out, ca_file, ip3_file, cer_file;
@@ -52,7 +57,7 @@ private:
   cCellMesh* mesh;
   cCell_flow* flow;
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
-  double p[PCOUNT]; // the model parameters array
+  std::unordered_map<std::string, double> p;
   std::vector<cfc> cells; // vector of connected cells and face counts
 
   Eigen::Array<double, Eigen::Dynamic, MODELECOUNT> element_data;
@@ -65,7 +70,7 @@ private:
   void init_solvec();
   void make_matrices();
   void exchange();
-  void save_results(std::ofstream &data_file, int var);
+  void save_results(std::ofstream& data_file, int var);
 
   MatrixN1d solve_nd(double delta_time);
   MatrixN1d make_load(double delta_time, bool plc);
@@ -73,8 +78,7 @@ private:
   Array1VC get_body_reactions(double c, double ip, double ce, double g, double ryr_f, double plc_f);
   Array1VC get_apical_reactions(double c, double ip, double ce, double h);
   double get_g_reaction(double c, double g); // RYR dynamics
-  double get_h_reaction(double c, double h);// IPR dynamics (apical)
+  double get_h_reaction(double c, double h); // IPR dynamics (apical)
 };
 
 #endif /* CCELL_CACIUM_H_ */
-

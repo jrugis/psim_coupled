@@ -14,7 +14,7 @@
 
 #include "cCellMesh.hpp"
 #include "cCell_calcium.hpp"
-#include "cLumenTree.hpp"
+#include "cLumen.hpp"
 #include "utils.hpp"
 
 cCellMesh::cCellMesh(const std::string mesh_name, cCell_calcium* p)
@@ -87,9 +87,10 @@ void cCellMesh::calc_apical_basal()
   for (int n = 0; n < mesh_vals.surface_triangles_count; n++) {
     double d = // triangle distance from apical
       (n_dfa(mesh_vals.surface_triangles(n, 0)) + n_dfa(mesh_vals.surface_triangles(n, 1)) +
-       n_dfa(mesh_vals.surface_triangles(n, 2))) / 3.0;
-    if (d < parent->p[APICALds]) apical_triangles(apical_triangles_count++) = n;
-    if (d < parent->p[APICALdl]) apical_keepout(apical_keepout_count++) = n;
+       n_dfa(mesh_vals.surface_triangles(n, 2))) /
+      3.0;
+    if (d < parent->p.at("IPRds")) apical_triangles(apical_triangles_count++) = n;
+    if (d < parent->p.at("IPRdl")) apical_keepout(apical_keepout_count++) = n;
   }
   apical_triangles.conservativeResize(apical_triangles_count, 1); // actual triangles count
   apical_keepout.conservativeResize(apical_keepout_count, 1);     // actual triangles count

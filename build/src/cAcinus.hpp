@@ -10,24 +10,28 @@
 
 #include <fstream>
 #include <string>
+#include <unordered_map>
 
 class cLumen;
 
 #include "global_defs.hpp"
 
 class cAcinus {
-friend class cLumen;
-public:
-  //cAcinus(std::string host_name, int my_rank, int cell_rank, int cell_count, int lumen_rank);
+  friend class cLumen;
+
+  public:
+  // cAcinus(std::string host_name, int my_rank, int cell_rank, int cell_count, int lumen_rank);
   cAcinus(std::string host_name, int my_rank, int cell_rank, int cell_count);
   ~cAcinus();
   void run();
 
-private:
+  private:
   std::string id;
   std::ofstream out;
-  double p[PCOUNT]; // the calcium model parameters array
-  //int my_rank, cell_rank, cell_count, lumen_rank;
+  // double p[PCOUNT]; // the calcium model parameters array
+  std::unordered_map<std::string, double> p;
+
+  // int my_rank, cell_rank, cell_count, lumen_rank;
   int my_rank, cell_rank, cell_count;
   cLumen* lumen;
 
@@ -35,4 +39,3 @@ private:
 };
 
 #endif /* CACINUS_H_ */
-

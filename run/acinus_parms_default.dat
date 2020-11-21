@@ -1,0 +1,219 @@
+##############################################################
+#
+# NOTES
+#  - parameter lines consist of parameter name followed by numeric value(s)
+#  - comment lines begin with '#'
+#  - parameter names are case sensitive
+#  - whitespace with spaces ONLY (e.g. not tabs)
+#  - there must be exactly either ONE or SEVEN parameter values in every parameter line 
+#  - parameter lines may have a trailing comment
+#
+##############################################################
+# GLOBAL SIMULATION PARAMETERS
+##############################################################
+#
+delT    0.01   # simulation time step(sec)
+totalT  0.1    # total simulation time(sec)
+Tstride 1      # results storage stride
+#-----------------
+#
+fluidFlow 0     # fluid flow simulation:  0 = disable, 1 = enable
+#-----------------
+#
+# ODE Solver Parameters - fluid flow
+#
+odeSolver 0   # 0 = SUNDIALS CVODE, 1 = libsoda LSODA
+odeSolverAbsTol 1e-12   # Solver tolerance absolute
+odeSolverRelTol 1e-12   #    "        "    relative
+#
+##############################################################
+# CALCIUM DYNAMICS PARAMETERS
+##############################################################
+#
+PLCsrt  1000.0   # PLC start time(sec)
+PLCfin  1000.0   # PLC finish time(sec)
+#-----------------
+#
+# initial concentrations
+#
+c0    0.0717
+ip0   0.0     # default: ip0 = 5 * (2e-4 / 0.1) * ((K3K^2 + c0^2) / c0^2)
+# default: ce0 = c0 / Gamma
+#-----------------
+#
+# diffusion, transmission
+#
+V_PLC  0.01
+Dc     5.0   # Calcium
+Dp     283   # IP3
+De     5.0   # Calcium in the ER
+Fc     0.0   # intercellular transmission parameter Calcium 
+Fip    0.0   # intercellular transmission parameter Ip3
+#-----------------
+#
+# RyR parameters
+#
+V_RyR  0.0     # for the new model
+K_RyR  0.2     # 0.16 for more sensitive RyR
+K_RyR2 17.0
+d_RyR  1.0
+m_RyR  0.0
+n_RyR  4.0
+#-----------------
+#
+# IPR parameters
+#
+k_beta     0.4
+K_p        0.2
+K_c        0.2
+K_h        0.08
+k_IPR      45.0
+k_IPR_min  0.0
+#-----------------
+#
+# Serca parameters
+#
+V_p   0.9
+k_p   0.2
+K_bar 0.00001957
+#-----------------
+#
+# Calcium parameters
+#
+Gamma  0.185
+#-----------------
+#
+# IP3 parameters
+#
+V_3K   0.05
+V_5K   0.05
+K_PLC  0.07
+K3K    0.4
+#-----------------
+#
+# h - IPR dynamics
+#
+# default: h0 = K_h^4 / (K_h^4 + c0^4)
+h0      0.0
+K_tau   0.1
+tau_max 1000
+#-----------------
+#
+# g - RYR dynamics
+#
+# default: g0 = c0^2 / (c0^2 + K_hRyR^2)
+g0     0.0
+K_hRyR 0.15
+tau    1.0
+#-----------------
+#
+# spatial distribution distances
+# 
+IPRds  0.8  # IPR (defines apical region)
+IPRdl  1.2
+PLCds  0.8  # PLC
+PLCdl  1.2
+#
+##############################################################
+# FLUID FLOW PARAMETERS
+##############################################################
+#
+# Ca2+-activated-K/Cl channels
+#
+KCaCC  0.26     # uM
+KCaKC  0.35     # uM
+eta1   4.49     # Hill Coefficient
+eta2   2.0      # Hill Coefficient
+#-----------------
+#
+# NaK
+#
+r        1.305e-9   # mM^-3 s^-1
+alpha1   0.641e-3   # mM^-1
+#-----------------
+#
+# Steady state Values for pH - Pena-Muntzenmayer et al. (2015)
+#
+pHl 6.81
+pHi 6.91
+pHe 7.41
+#-----------------
+#
+# Bicarbonate Buffer
+#
+kn = 2.64e4 * 0.012
+kp = 11 * 0.012
+#-----------------
+#
+# Na-K-2Cl
+#
+a1 157.55      # s^-1
+a2 2.0096e-5   # mM^-4 s^-1
+a3 1.0306      # s^-1
+a4 1.3852e-6   # mM^-4 s^-1
+#-----------------
+#
+# Steady state Concentrations - Interstitum
+#
+Cle   102.6    # mM
+Nae   140.2    # mM
+Ke    5.3      # mM
+#default: He = 1e3 * 10^(-pHe) # mM
+HCO3e 40
+CO2e  1.6
+#-----------------
+#
+# Anion Exchangers Falkenberg et al. (2010)
+#
+KCl 5.6
+KB  100
+KNa 15
+KH  4.5e-4
+#-----------------
+#
+# Membrane permeability to water
+#
+B1 4.43354480372293
+B2 1.94580852061638
+B3 0.0593663800587253
+#-----------------
+#
+Nal0  118.7  # mM
+Kl0   5.6    # mM
+# default: Cll0 = Nal0 + Kl0      # mM
+# default: Hl = 1e3 * 10^(-pHl)   # mM
+# default: HCO3l = Kl0 + Nal0 - Cll0 + Hl
+CO2l  11.6
+#
+Na0    25     # mM
+K0     120    # mM
+Cl0    50     # mM
+# default: H0 = 1e3 * 10^(-pHi)  # mM
+HCO30  10     # mM
+# default: CO20 = (0.197e4 * (CO2l + CO2e) - kn * HCO30 * H0) / (2 * 0.197e4 - kp)
+# default: Ul = (B2 / B1) * (2 * (Na0 + K0 + H0) + CO20 - (Nae + Ke + Cle + HCO3e)) - (2 * (Nal0 + Kl0 - Na0 - K0 - H0) - CO20)
+#-----------------
+#
+# Membrane potential SS
+#
+Va0   -50.24     # mV
+Vb0   -62.8      # mV
+# default: Vt0 = Va0 - Vb0  # mV
+#-----------------
+#
+# default: VtNa0 = RTF * log(Nal0 / Nae)
+# default: VtK0 = RTF * log(Kl0 / Ke)
+# default: VCl0 = RTF * log(Cll0 / Cl0)
+# default: VK0 = RTF * log(Ke / K0)
+Qa0    16.540088976029931
+Qt0    0.726112417038916
+Qtot0  17.266201393068847
+Qb0    16.540088976029921
+#----------------------------------------------------
+#----------------------------------------------------
+#----------------------------------------------------
+# ?????
+# param.s = 1e-3;
+# param.ct = 3;
+#----------------------------------------------------
+#----------------------------------------------------

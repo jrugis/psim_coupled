@@ -16,7 +16,7 @@
 class cCell_calcium;
 
 class cCellMesh {
-public:
+  public:
   cCellMesh(const std::string mesh_name, cCell_calcium* parent);
   ~cCellMesh();
   void print_info();
@@ -31,7 +31,7 @@ public:
   MatrixN1d e_dfb;                   // distance from basal (per element)
   int common_triangles_count, apical_triangles_count, basal_triangles_count;
 
-private:
+  private:
   std::string id;
   cCell_calcium* parent;
   void calc_common();

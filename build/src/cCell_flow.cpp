@@ -5,18 +5,15 @@
  *      Author: jrugis
  */
 
-#include "cCell_calcium.hpp"
 #include "cCell_flow.hpp"
+#include "cCell_calcium.hpp"
 
-//cCell_flow::cCell_flow(int index, double parms[], std::ofstream& out) {
-cCell_flow::cCell_flow(cCell_calcium* _parent) {
+// cCell_flow::cCell_flow(int index, double parms[], std::ofstream& out) {
+cCell_flow::cCell_flow(cCell_calcium* _parent)
+{
   parent = _parent;
   parent->out << "<Cell_flow> instantiated" << std::endl;
-  //my_index = index;
-  //p = parms;
-  //utils::get_parameters(id, flowParms, 1, p, out);
-  
+  p = &parent->p;
 }
 
-cCell_flow::~cCell_flow() {
-}
+cCell_flow::~cCell_flow() {}

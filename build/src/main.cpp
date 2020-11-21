@@ -6,13 +6,13 @@
  */
 
 #include <iostream>
+#include <mpi.h>
 #include <time.h>
 #include <unistd.h>
-#include <mpi.h>
 
-#include "global_defs.hpp"
 #include "cAcinus.hpp"
 #include "cCell_calcium.hpp"
+#include "global_defs.hpp"
 
 // one acinus + seven cells (for now, UNTIL WE ADD SOME MORE)
 #define ACINUS_RANK 0
@@ -22,7 +22,8 @@
 #define TEMP_SIZE 40
 
 // the main program function for each mpi node
-int main(int argc,char **args){
+int main(int argc, char** args)
+{
   int commSize, commRank;
   std::string host_name;
   struct timespec start, end;
@@ -32,7 +33,7 @@ int main(int argc,char **args){
   MPI_CHECK(MPI_Init(&argc, &args));
   MPI_CHECK(MPI_Comm_size(MPI_COMM_WORLD, &commSize));
   MPI_CHECK(MPI_Comm_rank(MPI_COMM_WORLD, &commRank));
-  if(commSize != MPI_NODES) mpi_abort(MPI_NODES_ABORT); // check mpiexec node count
+  if (commSize != MPI_NODES) mpi_abort(MPI_NODES_ABORT); // check mpiexec node count
 
   clock_gettime(CLOCK_REALTIME, &start);
 
@@ -43,14 +44,14 @@ int main(int argc,char **args){
 
   //*********************************************************************************
   // This code is running as EITHER an mpi process for the acinus,
-  if(commRank == ACINUS_RANK){
+  if (commRank == ACINUS_RANK) {
     std::cout << "<main> rank " << commRank << " running..." << std::endl;
     cAcinus* acinus = new cAcinus(host_name, commRank, CELLS_RANK, CELLS_COUNT);
     acinus->run();
     delete acinus;
   }
   // OR an mpi process for a cell.
-  else{
+  else {
     cCell_calcium* cell = new cCell_calcium(host_name, commRank, ACINUS_RANK);
     cell->run();
     delete cell;
