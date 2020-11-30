@@ -19,13 +19,14 @@ CPP = mpicxx
 ## NOTE: uncomment block for ONE of debug, profile or optimised
 
 ## debug
-#CPP_FLAGS =  $(CPP_DEFS) $(CPP_INCLUDES) -m64 -Og -Wall -Wextra
+#CPP_FLAGS =  $(CPP_DEFS) -m64 -Og -Wall -Wextra
 
 ## profile
-#CPP_FLAGS =  $(CPP_DEFS) $(CPP_INCLUDES) -m64 -O3 -pg 
+#CPP_FLAGS =  $(CPP_DEFS) -m64 -O3 -pg 
 
 ## optimised
 CPP_FLAGS =  $(CPP_DEFS) -m64 -O3 -march=native -mtune=native -Wall -Wpedantic -g
+#CPP_FLAGS =  $(CPP_DEFS) -m64 -Og -Wextra -march=native -mtune=native -Wall -Wpedantic -g
 
 ###########################################################################################
 ## NOTE: uncomment lines for ONE platform

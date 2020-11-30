@@ -29,16 +29,14 @@ Run
 cd psim_coupled/run
 
 cp run_default.sl my_run_xxxx.sl
-cp flow_parms_default.dat my_flow_parms_xxxx.dat
-cp calcium_parms_default.dat my_calcium_parms_xxxx.dat
+cp acinus_parms.dat my_acinus_parms_xxxx.dat
 cp sweep_parms_default.dat my_sweep_parms_xxxx.dat 
 
 edit my_run_xxxx.sl
-edit my_flow_parms_xxxx.dat
-edit my_calcium_parms_xxxx.dat
+edit my_acinus_parms_xxxx.dat
 edit my_sweep_parms_xxxx.dat
 
-python run_sim.py my_run_xxxx.sl my_flow_parms_xxxx.dat my_calcium_parms_xxxx.dat my_sweep_parms_xxxx.dat
+python run_sim.py my_run_xxxx.sl my_acinus_parms.dat my_sweep_parms_xxxx.dat
 squeue -u UPI
 
 
