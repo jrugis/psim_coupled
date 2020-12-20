@@ -12,9 +12,10 @@ git reset --hard origin/master
 Prerequisites
 -------------
 (could be put in .bash_profile)
-ml gimkl/2017a
-ml Eigen/3.3.4
-ml Python/2.7.14-gimkl-2017a
+ml SUNDIALS/5.5.0-gimkl-2020a
+ml Eigen/3.3.7
+ml Boost/1.71.0-GCCcore-9.2.0
+ml Python/3.8.2-gimkl-2020a
 
 
 Build
@@ -30,7 +31,7 @@ cd psim_coupled/run
 
 cp run_default.sl my_run_xxxx.sl
 cp acinus_parms.dat my_acinus_parms_xxxx.dat
-cp sweep_parms_default.dat my_sweep_parms_xxxx.dat 
+cp sweep_parms_default.dat my_sweep_parms_xxxx.dat
 
 edit my_run_xxxx.sl
 edit my_acinus_parms_xxxx.dat
