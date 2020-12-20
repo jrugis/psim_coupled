@@ -14,6 +14,10 @@
 echo $HOSTNAME
 echo "task array id: $SLURM_ARRAY_TASK_ID"
 
+ml SUNDIALS/5.5.0-gimkl-2020a
+ml Boost/1.71.0-GCCcore-9.2.0
+ml Eigen/3.3.7
+
 # directory associated with job array
 job_dir=$( head -n $SLURM_ARRAY_TASK_ID dirs.txt | tail -1 )
 echo $job_dir
@@ -23,6 +27,6 @@ cd $job_dir
 srun --ntasks=8 psim5
 rm psim5
 
-ml Python/2.7.14-gimkl-2017a
+ml Python/3.8.2-gimkl-2020a
 srun --ntasks=1 python "summary_plot.py"
 rm summary_plot.py
