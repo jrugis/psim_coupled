@@ -97,7 +97,7 @@ if not os.path.exists(run_dir + "/" + slurm):
   quit()
 
 lumen_tree = sys.argv[2] # lumen tree file
-if not os.path.exists(run_dir + "/" + parms):
+if not os.path.exists(run_dir + "/" + lumen_tree):
   print("no such lumen file: " + lumen_tree)
   quit()
 

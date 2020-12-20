@@ -36,7 +36,7 @@ edit my_run_xxxx.sl
 edit my_acinus_parms_xxxx.dat
 edit my_sweep_parms_xxxx.dat
 
-python run_sim.py my_run_xxxx.sl my_acinus_parms.dat my_sweep_parms_xxxx.dat
+python run_sim.py my_run_xxxx.sl lumen_tree.dat my_acinus_parms.dat my_sweep_parms_xxxx.dat
 squeue -u UPI
 
 
