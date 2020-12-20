@@ -14,7 +14,7 @@
 #
 delT    0.01   # simulation time step(sec)
 totalT  0.1    # total simulation time(sec)
-Tstride 1      # results storage stride
+Tstride 10      # results storage stride
 #-----------------
 #
 fluidFlow 0     # fluid flow simulation:  0 = disable, 1 = enable
@@ -30,8 +30,8 @@ odeSolverRelTol 1e-12   #    "        "    relative
 # CALCIUM DYNAMICS PARAMETERS
 ##############################################################
 #
-PLCsrt  200.0   # PLC start time(sec)
-PLCfin  350.0   # PLC finish time(sec)
+PLCsrt  500.0   # PLC start time(sec)
+PLCfin  500.0   # PLC finish time(sec)
 #-----------------
 #
 # initial concentrations
@@ -157,20 +157,19 @@ B2 1.94580852061638
 B3 0.0593663800587253
 #-----------------
 #
+CO2l  11.6
+#-----------------
+#
+# initial values for secretion solution vector 
+#
 Nal0  118.7  # mM
 Kl0   5.6    # mM
-CO2l  11.6
-#
 Na0    25     # mM
 K0     120    # mM
 Cl0    50     # mM
 HCO30  10     # mM
-#-----------------
-#
-# Membrane potential SS
-#
-Va0   -50.24     # mV
-Vb0   -62.8      # mV
+Va0   -50.24  # mV - Membrane potential SS
+Vb0   -62.8   # mV
 #-----------------
 #
 Qa0    16.540088976029931

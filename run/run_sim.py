@@ -83,12 +83,12 @@ def replace_line(fname, s1, s2):
 # main program
 ##################################################################
 
-print("psim5")
+print("psim_coupled")
 run_dir = os.getcwd()
 
 if(len(sys.argv) < 3):
   print("error: missing argument(s)")
-  print("usage: python run_sim.py <slurm-file> <acinus-parameter-file> <optional-parameter-sweep-file>")
+  print("usage: python run_sim.py <slurm-file> <lumen-tree-file> <acinus-parameter-file> <optional-parameter-sweep-file>")
   quit()
 
 slurm = sys.argv[1] # slurm file
@@ -96,15 +96,20 @@ if not os.path.exists(run_dir + "/" + slurm):
   print("no such slurm file: " + slurm)
   quit()
 
-parms = sys.argv[2] # acinus parameters file
+lumen_tree = sys.argv[2] # lumen tree file
+if not os.path.exists(run_dir + "/" + parms):
+  print("no such lumen file: " + lumen_tree)
+  quit()
+
+parms = sys.argv[3] # acinus parameters file
 if not os.path.exists(run_dir + "/" + parms):
   print("no such parameter file: " + parms)
   quit()
 
 p1_array = [""]
 p2_array = [""]
-if(len(sys.argv) >= 4):
-  sweep = sys.argv[3] # parameter sweep file
+if(len(sys.argv) >= 5):
+  sweep = sys.argv[4] # parameter sweep file
   if not os.path.exists(run_dir + "/" + sweep):
     print("no such parameter sweep file: " + sweep)
     quit()
@@ -130,10 +135,11 @@ for p1 in p1_array:
     f1.write(parm_dir + "\n")
 
     # copy some files into parameter directory
-    os.system("cp " + run_dir + "/psim5 .")
-    os.system("chmod 770 psim5")
+    os.system("cp " + run_dir + "/psim_coupled .")
+    os.system("chmod 770 psim_coupled")
     os.system("cp " + run_dir + "/" + slurm + " ../run.sl")
     os.system("cp " + run_dir + "/summary_plot.py .")
+    os.system("cp " + run_dir + "/" + lumen_tree + " l1.dat")
     os.system("cp " + run_dir + "/" + parms + " a1.dat")
     replace_line("a1.dat", p1, p2)
     for cell in range(1, 8): #copy mesh files
