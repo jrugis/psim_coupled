@@ -57,8 +57,6 @@ cCell_calcium::cCell_calcium(std::string host_name, int my_rank, int a_rank)
   ip3_file.open(id + "_ip3.bin", std::ios::binary);
   cer_file.open(id + "_cer.bin", std::ios::binary);
 
-  volume = element_data.col(VOL_e).sum();
-  out << "<Cell_calcium> initial volume: " << volume << std::endl;
   flow = new cCell_flow(this);
 }
 
@@ -90,7 +88,7 @@ void cCell_calcium::init_solvec()
   //prev_nd_solvec.block(np, 0, np, 1) = MatrixN1d().Constant(np, 1, 0.0); // default to 0.0
   nd_solvec.resize(NONDIFVARS * np, 1); // variable h
   prev_nd_solvec.resize(NONDIFVARS * np, 1);
-  prev_nd_solvec.block(0, 0, np, 1) = MatrixN1d().Constant(np, 1, 0.0); // default to 0.0
+  prev_nd_solvec.block(0, 0, np, 1) = MatrixN1d().Constant(np, 1, p.at("h0")); 
   for (int n = 0; n < np; n++) {
     if (node_data(n, BOOL_apical) == 1.0) { // apical nodes only
       prev_nd_solvec(n) = p.at("h0");
@@ -490,7 +488,7 @@ void cCell_calcium::run()
       ;
     }
     clock_gettime(CLOCK_REALTIME, &end);
-    elapsed = (end.tv_sec - start.tv_sec) + ((end.tv_nsec - start.tv_nsec) / 1000000000.0);
+    elapsed = (end.tv_sec - start.tv_sec) + ((end.tv_nsec - start.tv_nsec) / 1e9);
     out << std::fixed << std::setprecision(3);
     out << "<Cell_calcium> solver duration: " << elapsed << "s" << std::endl;
 

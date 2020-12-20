@@ -68,8 +68,9 @@ void utils::get_parameters(const std::string file_id, int cell_num, std::unorder
   // add dependant parameters to the map
   p["ce0"] = (p.at("ct") - p.at("c0")) / p.at("Gamma");
   p["h0"] = pow(p.at("K_h"), 4) / (pow(p.at("K_h"), 4) + pow(p.at("c0"), 4));
+
   p["He"] = 1e3 * pow(10, -p.at("pHe"));
-  p["Cll0"] = p.at("Nal0") = p.at("Kl0");
+  p["Cll0"] = p.at("Nal0") + p.at("Kl0");  
   p["Hl"] = 1e3 * pow(10, -p.at("pHl"));
   p["HCO3l"] = p.at("Kl0") + p.at("Nal0") - p.at("Cll0") + p.at("Hl");
   p["H0"] = 1e3 * pow(10, -p.at("pHi"));

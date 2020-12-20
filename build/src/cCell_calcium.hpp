@@ -63,7 +63,6 @@ class cCell_calcium {
   std::unordered_map<std::string, double> p;
   std::vector<cfc> cells; // vector of connected cells and face counts
 
-  double volume;
   Eigen::Array<double, Eigen::Dynamic, MODELECOUNT> element_data;
   Eigen::Array<double, Eigen::Dynamic, MODELSCOUNT> surface_data;
   Eigen::Array<double, Eigen::Dynamic, MODELNCOUNT> node_data;

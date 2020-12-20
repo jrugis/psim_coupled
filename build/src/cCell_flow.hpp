@@ -14,10 +14,8 @@
 
 class cCell_calcium;
 
-#include "global_defs.hpp"
-
-enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT };   // solution vector components
-enum constant_values { aNaK, aNkcc1, GtNa, GtK, GCl, GK, G1, G4, GB, St, Sb, Sa, CONSTCOUNT }; // invariant cell properties
+enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT };              // solution vector components
+enum constant_values { aNaK, aNkcc1, GtNa, GtK, GCl, GK, G1, G4, GB, St, Sb, Sa, V0, CONSTCOUNT }; // invariant cell properties
 
 // some convenience typedefs
 typedef Eigen::Array<double, 1, IONCOUNT> Array1IC;
@@ -32,13 +30,12 @@ class cCell_flow {
 
   private:
   cCell_calcium* parent;
-  //std::unordered_map<std::string, double>* p;
+  std::unordered_map<std::string, double>* p;
   //int cell_number;
-  //double volume;
-  Array1IC solvec, prev_solvec; // solution vectors for ions
+  Array1IC solvec, prev_solvec;   // solution vectors for ions
   Array1CC scv;                   // secretion constants vector
   void init_solvec();
-  void init_constvec();
+  void init_const();
 };
 
 #endif /* CCELL_FLOW_H_ */
