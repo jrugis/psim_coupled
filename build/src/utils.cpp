@@ -60,7 +60,7 @@ void utils::get_parameters(const std::string file_id, int cell_num, std::unorder
     line = boost::trim_right_copy(line);   // remove trailing whitespace
     boost::split(tokens, line, boost::is_any_of(" "), boost::token_compress_on);
     p[tokens[0]] = atof(tokens[((tokens.size() == 2) ? 1 : cell_num)].c_str());
-    out << " " << tokens[0];
+    out << " " << tokens[0] << std::flush;
   }
   out << std::endl;
   model_file.close();
