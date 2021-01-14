@@ -4,7 +4,7 @@
 #SBATCH --time=01:00:00            # Walltime (HH:MM:SS)
 #SBATCH --mem-per-cpu=4000         # memory/cpu (in MB, set to half of what's actually required)
 ##SBATCH --partition=prepost        # 3 hours, 2 (36) cores,      15GB
-#SBATCH --partition=large          # 3 days,  1024 (8424) cores, 3GB
+#SBATCH --partition=large,bigmem          # 3 days,  1024 (8424) cores, 3GB
 ##SBATCH --partition=bigmem         # 7 days,  108 (108) cores,   15GB
 #SBATCH --hint=nomultithread       # don't use hyperthreading
 ##SBATCH --ntasks=9                 # number of tasks (e.g. MPI)

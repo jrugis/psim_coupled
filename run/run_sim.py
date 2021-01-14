@@ -4,7 +4,6 @@ import time
 import subprocess
 import sys
 import re
-import string
 
 ##################################################################
 # functions
@@ -124,7 +123,7 @@ mesh_base = "out_N4_p3-p2-p4-Xtet.bmsh"
 run_dir = re.sub("^/scale_wlg_persistent/filesets", "/nesi", run_dir)
 dlist = run_dir.split("/")[-4:]
 assert "project" in run_dir, "Run directory should be on project filesystem"
-results_dir = string.replace(run_dir, "project", "nobackup", 1)
+results_dir = run_dir.replace("project", "nobackup", 1)
 #results_dir = "/nesi/nobackup/" + dlist[0] + "/" + dlist[1] + "/" + dlist[2] + "/" + dlist[3]
 results_dir += "/results/" + time.strftime("%y%m%d_%H%M%S")
 print("result dir:", results_dir)
