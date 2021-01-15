@@ -145,7 +145,7 @@ for p1 in p1_array:
     os.system("chmod 770 psim_coupled")
     os.system("cp " + run_dir + "/" + slurm + " ../run.sl")
     os.system("cp " + run_dir + "/summary_plot.py .")
-    os.system("cp " + run_dir + "/" + lumen_tree + " l1.txt")
+    os.system("cp " + run_dir + "/" + lumen_tree + " l1.dat")
     os.system("cp " + run_dir + "/" + parms + " a1.dat")
     replace_line("a1.dat", p1, p2)
     for cell in range(1, 8): #copy mesh files
