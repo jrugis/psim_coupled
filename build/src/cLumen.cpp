@@ -28,7 +28,7 @@ cLumenTree::~cLumenTree() {}
 
 void cLumenTree::get_segments()
 {
-  std::string file_name = id + ".txt";
+  std::string file_name = id + ".dat";
   std::ifstream lumen_file(file_name.c_str(), std::ios::in | std::ios::binary); // open the lumen file
   std::string line;                                                             // file line buffer
   std::vector<std::string> tokens;                                              // tokenized line
