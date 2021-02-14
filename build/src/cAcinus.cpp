@@ -28,7 +28,7 @@ cAcinus::cAcinus(std::string host_name, int rank, int c_rank, int c_count)
   out << "<Acinus> host_name: " << host_name << std::endl;
 
   utils::get_parameters(id, 1, p, out);
-
+  
   lumen = new cLumen(this, "l1"); // "l1" hard coded for now
 }
 

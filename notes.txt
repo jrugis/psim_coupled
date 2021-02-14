@@ -1,3 +1,6 @@
+############################################################################################
+############################################################################################
+
 Parotid Simulation on Mahuika
 =============================
 cd /nesi/project/nesi00119/your_name
@@ -45,3 +48,31 @@ Results
 -------
 cd /nesi/nobackup/nesi00119/your_name/psim_coupled/run/results/XXXX/XXXX
 summary_plot.pdf
+
+############################################################################################
+############################################################################################
+
+MPI Processes / Classes
+=======================
+1x_Acinus
+   member class: 1x_Lumen    
+
+7x_Cell_calcium
+   member class: 1x CellMesh 
+   member class: 1x Cell_flow
+
+   Class data exchange: 
+     Cell_calcium -> Cell_flow, calcium concentration
+     Cell_flow -> Cell_calcium, volume factor
+
+MPI Messaging
+=============
+Acinus <-> Cells
+   acinus triggers cell sim stepping
+   cells acknowledge when step completed (with flow data for lumen)
+
+Cells <-> Cells
+   cell-to-cell tight juction coupling (within each cell sim step)
+   
+############################################################################################
+############################################################################################

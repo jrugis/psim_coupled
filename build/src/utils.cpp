@@ -64,29 +64,6 @@ void utils::get_parameters(const std::string file_id, int cell_num, std::unorder
   }
   out << std::endl;
   model_file.close();
-  
-  // add dependant parameters to the map
-  p["ce0"] = (p.at("ct") - p.at("c0")) / p.at("Gamma");
-  p["h0"] = pow(p.at("K_h"), 4) / (pow(p.at("K_h"), 4) + pow(p.at("c0"), 4));
-
-  p["He"] = 1e3 * pow(10, -p.at("pHe"));
-  p["Cll0"] = p.at("Nal0") + p.at("Kl0");  
-  p["Hl"] = 1e3 * pow(10, -p.at("pHl"));
-  p["HCO3l"] = p.at("Kl0") + p.at("Nal0") - p.at("Cll0") + p.at("Hl");
-  p["H0"] = 1e3 * pow(10, -p.at("pHi"));
-  p["CO20"] = (0.197e4 * (p.at("CO2l") + p.at("CO2e")) - p.at("kn") * p.at("HCO30") * p.at("H0")) / (2 * 0.197e4 - p.at("kp"));
-  p["Ul"] = (p.at("B2") / p.at("B1")) * (2 * (p.at("Na0") + p.at("K0") + p.at("H0")) + p.at("CO20") - 
-	(p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e"))) -
-    (2 * (p.at("Nal0") + p.at("Kl0") - p.at("Na0") - p.at("K0") - p.at("H0")) - p.at("CO20"));
-  p["Vt0"] = p.at("Va0") - p.at("Vb0");
-  p["VtNa0"] = RTF * log(p.at("Nal0") / p.at("Nae"));
-  p["VtK0"] = RTF * log(p.at("Kl0") / p.at("Ke"));
-  p["VCl0"] = RTF * log(p.at("Cll0") / p.at("Cl0"));
-  p["VK0"] = RTF * log(p.at("Ke") / p.at("K0"));
-
-  // add dependant default parameters to the map if not already defined
-  if (not p.count("ip0"))
-    p["ip"] = 0.5 * (2e-4 / 0.1) * ((pow(p.at("K3K"), 2) + pow(p.at("c0"), 2)) / pow(p.at("c0"), 2));
 };
 
 double utils::get_distance(const Vector3d& p, const Vector3d& v, const Vector3d& w)

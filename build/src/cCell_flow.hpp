@@ -30,7 +30,7 @@ class cCell_flow {
 
   private:
   cCell_calcium* parent;
-  std::unordered_map<std::string, double>* p;
+  std::unordered_map<std::string, double> p;
   //int cell_number;
   Array1IC solvec, prev_solvec;   // solution vectors for ions
   Array1CC scv;                   // secretion constants vector

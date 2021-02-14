@@ -9,6 +9,7 @@
 ##
 ## notes 
 ##    source code formating: clang-format -i ./src/*
+##    to execute on iMac: mpiexec -n 8 ./psim_coupled
 ##
 ###########################################################################################
 ## C++

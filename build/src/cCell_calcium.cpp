@@ -30,6 +30,14 @@ cCell_calcium::cCell_calcium(std::string host_name, int my_rank, int a_rank)
   out << "<Cell_calcium> host_name: " << host_name << std::endl;
 
   utils::get_parameters(acinus_id, cell_number, p, out);
+  // add dependant parameters to the parameters map
+  p["ce0"] = (p.at("ct") - p.at("c0")) / p.at("Gamma");
+  p["h0"] = pow(p.at("K_h"), 4) / (pow(p.at("K_h"), 4) + pow(p.at("c0"), 4));
+
+  // add dependant default parameters to the parameters map if not already defined
+  if (not p.count("ip0"))
+    p["ip"] = 0.5 * (2e-4 / 0.1) * ((pow(p.at("K3K"), 2) + pow(p.at("c0"), 2)) / pow(p.at("c0"), 2));
+
   mesh = new cCellMesh(id, this);
   mesh->print_info();
 
@@ -446,7 +454,8 @@ void cCell_calcium::run()
   while (true) {
     step++;
     prev_solvec = solvec;       // c, ip, ce
-    prev_nd_solvec = nd_solvec; // g, h
+    //prev_nd_solvec = nd_solvec; // g, h
+    prev_nd_solvec = nd_solvec; // h
 
     // get current time and time step value from acinus
     MPI_CHECK(MPI_Recv(&msg, ACCOUNT, MPI_FLOAT, acinus_rank, ACINUS_CELL_TAG, MPI_COMM_WORLD, &stat));
