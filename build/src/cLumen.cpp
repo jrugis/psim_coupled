@@ -78,6 +78,7 @@ void cLumenTree::print_info()
   *out << "<LumenTree> number of points: " << points_count << std::endl;
   *out << "<LumenTree> number of segments: " << segments_count << std::endl;
 }
+
 // cLumen::cLumen(std::string host_name, int rank, int c_count, int a_rank) {
 cLumen::cLumen(cAcinus* _parent, std::string _id)
 {

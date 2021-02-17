@@ -284,7 +284,7 @@ void cCell_flow::step(){
 	//JBB = w * GB * ( param.kp * param.CO20 - param.kn * HCO3 * H ); 
   double JBB = solvec(VOL) * s.GB * ( p.at("kp") * p.at("CO20") - p.at("kn") * solvec(HCO3) * solvec(H) );                 
  
-  // the solver goes here
+  // invoke the solver here...
   
   prev_solvec = solvec;
 }
