@@ -150,7 +150,7 @@ void cCell_flow::step(){
 
 }
 
-void cCell_flow::secretion(double time_, Array1IC& x_ion, Array1IC& dx_ion){
+void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	// %% Currents and fluxes
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// % (3Na+)/(2K+) ATP-ase pump (NaK)
@@ -262,7 +262,6 @@ void cCell_flow::secretion(double time_, Array1IC& x_ion, Array1IC& dx_ion){
 	//Qtot=(Qa+Qt);                                     % micro-metres^3.s^-1
   double Qa = p.at("B1") * ( 2 * ( x_ion(Nal) + x_ion(Kl) - x_ion(Na) - x_ion(K) - x_ion(H) ) - p.at("CO20") + p.at("Ul") );
   double Qb = p.at("B2") * ( 2 * ( x_ion(Na) + x_ion(K) + x_ion(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
-  double t = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
   double Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
   double Qtot = Qa + Qt;
   

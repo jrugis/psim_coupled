@@ -26,7 +26,7 @@ class cCell_flow {
   ~cCell_flow();
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW   // required when using fixed-size vectorizable Eigen object(s)
   void step();
-  void secretion(double time_, Array1IC& x_ion, Array1IC& dx_ion);
+  void secretion(double t, Array1IC& x_ion, Array1IC& dx_ion);
 
   private:
   cCell_calcium* parent;
