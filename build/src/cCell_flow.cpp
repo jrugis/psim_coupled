@@ -11,7 +11,7 @@
 #include "cCellMesh.hpp"
 #include "cCell_flow.hpp"
 #include "cCell_calcium.hpp"
-//#include "cCVode.hpp"
+#include "cCVode.hpp"
 
 // cCell_flow::cCell_flow(int index, double parms[], std::ofstream& out) {
 cCell_flow::cCell_flow(cCell_calcium* _parent)
@@ -71,16 +71,16 @@ void cCell_flow::init_const()
     s.GB = 4251.79 / vBB;
 
     // Tight Junction Na current GtNa
-    double vtNa = s.St * ( p.at("Vt0") - p.at("VtNa0" )) / F;
+    double vtNa = s.St * ( p.at("Vt0") - p.at("VtNa0" )) / F_CONST;
     s.GtNa = p.at("Qtot0") * p.at("Nal0") / vtNa;
     
     // Tight junction K current GtK
-    double vtK = s.St * ( p.at("Vt0") - p.at("VtK0") ) / F; 
+    double vtK = s.St * ( p.at("Vt0") - p.at("VtK0") ) / F_CONST;
     s.GtK = p.at("Qtot0") * p.at("Kl0") / vtK;
     
     // Apical Ca2+ activated Cl channels GCl
     double PCl = 1.0 / ( 1.0 + pow( p.at("KCaCC") / p.at("c0"), p.at("eta1")) );
-    double vCl = PCl * ( p.at("Va0") + p.at("VCl0")) / F;
+    double vCl = PCl * ( p.at("Va0") + p.at("VCl0")) / F_CONST;
     s.GCl = -p.at("Qtot0") * p.at("Cll0") / vCl;
 
     // Sodium Proton Antiporter G1
@@ -100,7 +100,7 @@ void cCell_flow::init_const()
 
     // Ca2+ activated K+ channel GK
     double PKb = 1.0 / ( 1.0 + pow( p.at("KCaKC") / p.at("c0"), p.at("eta2") ));
-    double vK = PKb * ( p.at("Vb0") - p.at("VK0") ) / F;
+    double vK = PKb * ( p.at("Vb0") - p.at("VK0") ) / F_CONST;
     s.GK = ( JNkcc10 + 2 * ( JtNa0 + JtK0 ) ) / ( 3 * vK );
 
     // Anion exchanger 4 G4
@@ -139,15 +139,14 @@ void cCell_flow::init_solvec()
 }
   
 void cCell_flow::step(){
+  // TODO: precompute values here that don't depend on x_ion: PrCl, PrKa, PrKb
 
-  // invoke the solver here...
+
+  // TODO: invoke the solver here...
   
   
+  // store solution
   prev_solvec = solvec;
-
-
-
-
 }
 
 void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
@@ -239,17 +238,17 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//JCl = GCl * PrCl * ( Va + VCl ) / param.F;  % fS.micro-metres^2.mV.mol.C^-1
 	//JKa = GK * PrKa * ( Va - VKa ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1
 	//JKb = GK * PrKb * ( Vb - VKb ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1
-  double JCl = s.GCl * PrCl * ( x_ion(Va) + VCl) / F;
-  double JKa = s.GK * PrKa * ( x_ion(Va) - VKa) / F;
-  double JKb = s.GK * PrKb * ( x_ion(Vb) - VKb) / F;
+  double JCl = s.GCl * PrCl * ( x_ion(Va) + VCl) / F_CONST;
+  double JKa = s.GK * PrKa * ( x_ion(Va) - VKa) / F_CONST;
+  double JKb = s.GK * PrKb * ( x_ion(Vb) - VKb) / F_CONST;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Tight Junction Na+ and K+ currents
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//JtNa = GtNa * St * ( Vt - VtNa ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1
 	//JtK = GtK * St * ( Vt - VtK ) / param.F;      % fS.micro-metres^2.mV.mol.C^-1
-  double JtNa = s.GtNa * s.St * ( Vt - VtNa ) / F;
-  double JtK = s.GtK * s.St * ( Vt - VtK ) / F;
+  double JtNa = s.GtNa * s.St * ( Vt - VtNa ) / F_CONST;
+  double JtK = s.GtK * s.St * ( Vt - VtK ) / F_CONST;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Osmolarities 
