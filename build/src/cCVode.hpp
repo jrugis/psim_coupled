@@ -19,7 +19,7 @@ class cCVode {
   cCVode(cCell_flow* flow_, std::ofstream& out_, realtype abstol_, realtype reltol_);
   ~cCVode();
   void init(Array1IC& yini);
-  void run(realtype t, realtype tend, MatrixN1d& yout);
+  void run(realtype t, realtype tend, Array1IC& yout);
 
   private:
   cCell_flow* flow;

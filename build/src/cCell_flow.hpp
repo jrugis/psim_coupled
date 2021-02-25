@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include "global_defs.hpp"
+#include "cCVode.hpp"
 
 class cCell_calcium;
 
@@ -25,7 +26,7 @@ class cCell_flow {
   cCell_flow(cCell_calcium* parent);
   ~cCell_flow();
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW   // required when using fixed-size vectorizable Eigen object(s)
-  void step();
+  void step(double t, double dt);
   void secretion(double t, Array1IC& x_ion, Array1IC& dx_ion);
 
   private:
@@ -34,6 +35,7 @@ class cCell_flow {
   //int cell_number;
   Array1IC solvec, prev_solvec;   // solution vectors for ions
   constant_values s;              // secretion constants vector
+  cCVode* cvode_solver;
   void init_solvec();
   void init_const();
 };

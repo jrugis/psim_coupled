@@ -38,6 +38,9 @@ cCell_flow::cCell_flow(cCell_calcium* _parent)
   parent->out << "<Cell_flow> initialising solution vector and constant values" << std::endl;
   init_const();    // first initialise the constant values
   init_solvec();   // initialise solution buffer
+
+  // initialise the solver
+  cvode_solver = new cCVode(this, parent->out, p.at("odeSolverAbsTol"), p.at("odeSolverRelTol"));
 }
 
 cCell_flow::~cCell_flow() {
@@ -96,7 +99,7 @@ void cCell_flow::init_const()
         / pow( p.at("a3") + p.at("a4") * p.at("Na0") * p.at("K0") * p.at("Cl0"), 2) );
     double vNaK = s.Sb * ( p.at("r") * pow(p.at("Ke"), 2) * pow(p.at("Na0"), 3)
         / ( pow(p.at("Ke"), 2) + p.at("alpha1") * pow(p.at("Na0"), 3) ) );                  
-	s.aNaK = ( ( JtNa0 + JtK0 ) - JNkcc10 ) / ( 3 * vNaK);
+    s.aNaK = ( ( JtNa0 + JtK0 ) - JNkcc10 ) / ( 3 * vNaK);
 
     // Ca2+ activated K+ channel GK
     double PKb = 1.0 / ( 1.0 + pow( p.at("KCaKC") / p.at("c0"), p.at("eta2") ));
@@ -138,12 +141,12 @@ void cCell_flow::init_solvec()
   //std::cerr << "Cell:" << parent->id << " <Cell_flow> H: " << prev_solvec(H) << std::endl;
 }
   
-void cCell_flow::step(){
+void cCell_flow::step(double t, double dt){
   // TODO: precompute values here that don't depend on x_ion: PrCl, PrKa, PrKb
 
 
-  // TODO: invoke the solver here...
-  
+  // invoke the solver here
+  cvode_solver->run(t, t + dt, solvec);
   
   // store solution
   prev_solvec = solvec;

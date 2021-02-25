@@ -62,8 +62,8 @@ cCVode::cCVode(cCell_flow* flow_, std::ofstream& out_, realtype abstol_, realtyp
   : flow(flow_), out(out_), initialised(false), nvars(0), abstol(abstol_), reltol(reltol_)
 {
   out << std::scientific;
-  out << "<CVode>: creating CVode solver" << std::endl;
-  out << " tolerances are " << abstol << " (absolute) and ";
+  out << "<CVode> creating CVode solver" << std::endl;
+  out << "<CVode> tolerances are " << abstol << " (absolute) and ";
   out << reltol << " (relative)" << std::endl;
   out << std::fixed;
   y = NULL;
@@ -137,7 +137,7 @@ void cCVode::init(Array1IC& yini)
   initialised = true;
 }
 
-void cCVode::run(realtype t, realtype tout, MatrixN1d& yout)
+void cCVode::run(realtype t, realtype tout, Array1IC& yout)
 {
   int retval;
 
