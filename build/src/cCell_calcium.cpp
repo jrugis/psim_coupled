@@ -473,7 +473,7 @@ void cCell_calcium::run()
     plc = ((current_time >= p.at("PLCsrt")) and (current_time <= p.at("PLCfin"))); // PLC on or off?
 
     // calculate the fluid flow
-	if(p.at("fluidFlow")) flow->step(); 
+    if(p.at("fluidFlow")) flow->step(); 
 	
     if (delta_time != prev_delta_time) { // recalculate A matrix if time step changed
       sparseA = sparseMass + (delta_time * sparseStiff);

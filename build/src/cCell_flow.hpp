@@ -17,7 +17,7 @@ class cCell_calcium;
 enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
 class constant_values {                                                           // invariant cell properties
   public:
-  double aNaK, aNkcc1, GtNa, GtK, GCl, GK, G1, G4, GB, St, Sb, Sa, V0;
+  double aNaK, aNkcc1, GtNa, GtK, GCl, GK, G1, G4, GB, St, Sb, Sa, V0, wl;
 };
 
 // some convenience typedefs

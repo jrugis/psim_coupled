@@ -45,23 +45,24 @@ cCell_flow::~cCell_flow() {
 void cCell_flow::init_const()
 {
     // initial cell volume
-	s.V0 = parent->element_data.col(VOL_e).sum();  
+    s.V0 = parent->element_data.col(VOL_e).sum();  
+    s.wl = s.V0 * 0.02;
 
     // apical surface area
-	s.Sa = 0.0;   
+    s.Sa = 0.0;   
     for (int n = 0; n < parent->mesh->apical_triangles_count; n++) {
       int apical_tri = parent->mesh->apical_triangles(n);
       s.Sa += parent->surface_data(apical_tri, AREA_s);
     }
 
-	// basal surface area
+    // basal surface area
     s.Sb = 0.0;   
     for (int n = 0; n < parent->mesh->basal_triangles_count; n++) {
       int basal_tri = parent->mesh->basal_triangles(n);
       s.Sb += parent->surface_data(basal_tri, AREA_s);
     }
 
-	s.St = s.Sa / 0.943551157250391;
+    s.St = s.Sa / 0.943551157250391;
     s.aNkcc1 = ( 0.0063812 ) * s.Sb;
 
     // Bicarbonate Buffer GB
@@ -192,14 +193,14 @@ void cCell_flow::step(){
   double PKa = 0.0;
   for (int n = 0; n < parent->mesh->apical_triangles_count; n++) { // apical tris
     int this_tri = parent->mesh->apical_triangles(n);
-	double area_tri = parent->surface_data(this_tri, AREA_s);
+    double area_tri = parent->surface_data(this_tri, AREA_s);
 
-	double ca_tri = 0.0;  // average calcium at this triangle
+    double ca_tri = 0.0;  // average calcium at this triangle
     for (int i=0; i<3; i++){
       int vertex_index = parent->mesh->mesh_vals.surface_triangles(this_tri, i);
       ca_tri += parent->solvec(vertex_index);  // note: Ca is first
     }
-	ca_tri /= 3.0;  
+    ca_tri /= 3.0;  
 
     PCl += (1.0 / (1.0 + pow(p.at("KCaCC") / ca_tri, p.at("eta1")))) * area_tri;
     PKa += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta1")))) * area_tri;
@@ -210,14 +211,14 @@ void cCell_flow::step(){
   double PKb = 0.0;
   for (int n = 0; n < parent->mesh->basal_triangles_count; n++) { // basal tris
     int this_tri = parent->mesh->basal_triangles(n);
-	double area_tri = parent->surface_data(this_tri, AREA_s);
+    double area_tri = parent->surface_data(this_tri, AREA_s);
 
-	double ca_tri = 0.0;  // average calcium at this triangle
+    double ca_tri = 0.0;  // average calcium at this triangle
     for (int i=0; i<3; i++){
       int vertex_index = parent->mesh->mesh_vals.surface_triangles(this_tri, i);
       ca_tri += parent->solvec(vertex_index);  // note: Ca is first
     }
-	ca_tri /= 3.0;  
+    ca_tri /= 3.0;  
     PKb += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta1")))) * area_tri;
   }
   double PrKb = PKb / s.Sb; 
@@ -283,8 +284,35 @@ void cCell_flow::step(){
 	//% cellular volume
 	//JBB = w * GB * ( param.kp * param.CO20 - param.kn * HCO3 * H ); 
   double JBB = solvec(VOL) * s.GB * ( p.at("kp") * p.at("CO20") - p.at("kn") * solvec(HCO3) * solvec(H) );                 
+
+  // Equations
+//  dx(1) = ( JtNa - Qtot*Nal + 3*JNaKa )/param.wl(i);
+//  dx(2) = ( JtK  - Qtot*Kl + JKa - 2*JNaKa)/param.wl(i);
+//  dx(3) = ( -JCl - Qtot*Cll     )/param.wl(i);
+//  dx(4) = Qb - Qa;
+//  dx(5) = ( JNkcc1 - 3*(JNaKb+JNaKa) + JNhe1 - JAe4 - dx(4) * Na ) / w;
+//  dx(6) = ( JNkcc1 + 2*(JNaKb+JNaKa) - JKb - JKa - dx(4) * K ) / w;
+//  dx(7) = ( 2 * JNkcc1 + JAe4 + JCl - dx(4) * Cl ) / w;
+//  dx(8) = ( JBB - 2 * JAe4 - dx(4) * HCO3 ) / w;
+//  dx(9) = ( JBB - JNhe1 - dx(4) * H ) / w;
+//  dx(10) = 100*(-JCl - JNaKa - JKa - JtK - JtNa);      % Note the arbitrary factor of 100, just to make sure Va is fast.
+//  dx(11) = 100*(     - JNaKb - JKb + JtK + JtNa);
+//  enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
+  double w = solvec(VOL);
+  solvec(Nal) = (JtNa - Qtot * solvec(Nal) + 3.0 * JNaKa) / s.wl;
+  solvec(Kl) = (JtK - Qtot * solvec(Kl) + JKa - 2.0 * JNaKa) / s.wl;
+  solvec(Cll) = (JCl - Qtot * solvec(Cll)) / s.wl;
+  solvec(VOL) = Qb - Qa;
+  solvec(Na) = (JNkcc1 - 3.0 * (JNaKb + JNaKa) + JNhe1 - JAe4 - solvec(VOL) * solvec(Na)) / w;
+  solvec(K) = (JNkcc1 + 2.0 * (JNaKb + JNaKa) - JKb - JKa - solvec(VOL) * solvec(K)) / w;
+  solvec(Cl) = (2.0 * JNkcc1 + JAe4 + JCl - solvec(VOL) * solvec(Cl)) / w;
+  solvec(HCO3) = (JBB - 2.0 * JAe4 - solvec(VOL) * solvec(HCO3)) / w;
+  solvec(H) = (JBB - JNhe1 - solvec(VOL) * solvec(H)) / w;
+  solvec(Va) = 100.0 * (-JCl - JNaKa - JKa - JtK - JtNa);  // Note the arbitrary factor of 100, just to make sure Va is fast.
+  solvec(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
  
   // invoke the solver here...
+  
   
   prev_solvec = solvec;
 }
