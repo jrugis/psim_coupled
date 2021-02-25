@@ -100,5 +100,10 @@ const double RTF = 1000.0 * R * T / F;
 
 //************************************************************************
 //************************************************************************
+// secretion solution values
+enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
+// some convenience typedefs
+typedef Eigen::Array<double, 1, IONCOUNT> Array1IC;
+
 
 #endif /* DEFS_H_ */

@@ -11,6 +11,7 @@
 #include "cCellMesh.hpp"
 #include "cCell_flow.hpp"
 #include "cCell_calcium.hpp"
+//#include "cCVode.hpp"
 
 // cCell_flow::cCell_flow(int index, double parms[], std::ofstream& out) {
 cCell_flow::cCell_flow(cCell_calcium* _parent)
@@ -138,8 +139,20 @@ void cCell_flow::init_solvec()
 }
   
 void cCell_flow::step(){
+
+  // invoke the solver here...
+  
+  
+  prev_solvec = solvec;
+
+
+
+
+}
+
+void cCell_flow::secretion(double time_, Array1IC& x_ion, Array1IC& dx_ion){
 	// %% Currents and fluxes
-  	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// % (3Na+)/(2K+) ATP-ase pump (NaK)
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// NaKbasalfactor = 0.7;        % Fraction of NaK ATPase in the basal membrane
@@ -147,34 +160,34 @@ void cCell_flow::step(){
 
 	//JNaKb = NaKbasalfactor*Sb*aNaK*( param.r*param.Ke^2 * Na^3 ... 
 	//  / ( param.Ke^2 + param.alpha1 * Na^3 ) );   
-  double JNaKb = NaKbasalfactor*s.Sb*s.aNaK*(p.at("r")*pow(p.at("Ke"),2) * pow(solvec(Na),3) / 
-	  ( pow(p.at("Ke"),2) + p.at("alpha1") * pow(solvec(Na),3) ) );
+  double JNaKb = NaKbasalfactor*s.Sb*s.aNaK*(p.at("r")*pow(p.at("Ke"),2) * pow(x_ion(Na),3) / 
+	  ( pow(p.at("Ke"),2) + p.at("alpha1") * pow(x_ion(Na),3) ) );
 
 	//JNaKa = (1-NaKbasalfactor)*Sa*aNaK*(param.r * Kl^2 * Na^3 ...
 	//  / ( Kl^2 + param.alpha1 * Na^3 ) ); 
-  double JNaKa = (1-NaKbasalfactor)*s.Sa*s.aNaK*(p.at("r") * pow(solvec(Kl),2) * pow(solvec(Na),3) /
-	  ( pow(solvec(Kl),2) + p.at("alpha1") * pow(solvec(Na),3) ) ); 
+  double JNaKa = (1-NaKbasalfactor)*s.Sa*s.aNaK*(p.at("r") * pow(x_ion(Kl),2) * pow(x_ion(Na),3) /
+	  ( pow(x_ion(Kl),2) + p.at("alpha1") * pow(x_ion(Na),3) ) ); 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Nernst potentials (J/C)1e3 = mV
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//VCl = param.RTF * log( Cll / Cl );        
-  double VCl = RTF * log( solvec(Cll) / solvec(Cl) );
+  double VCl = RTF * log( x_ion(Cll) / x_ion(Cl) );
 
 	//VKb = param.RTF * log( param.Ke / K ); 
-  double VKb = RTF * log( p.at("Ke") / solvec(K));    
+  double VKb = RTF * log( p.at("Ke") / x_ion(K));    
 
 	//VKa = param.RTF * log( Kl / K );
-  double VKa = RTF * log( solvec(Kl) / solvec(K));         
+  double VKa = RTF * log( x_ion(Kl) / x_ion(K));         
 
 	//VtNa = param.RTF * log( Nal / param.Nae );
-  double VtNa = RTF * log( solvec(Nal) / p.at("Nae"));         
+  double VtNa = RTF * log( x_ion(Nal) / p.at("Nae"));         
 
 	//VtK = param.RTF * log( Kl / param.Ke );   
-  double VtK = RTF * log( solvec(Kl) / p.at("Ke"));         
+  double VtK = RTF * log( x_ion(Kl) / p.at("Ke"));         
 
 	//Vt = Va - Vb;
-  double Vt = solvec(Va) - solvec(Vb);
+  double Vt = x_ion(Va) - x_ion(Vb);
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -226,9 +239,9 @@ void cCell_flow::step(){
 	//JCl = GCl * PrCl * ( Va + VCl ) / param.F;  % fS.micro-metres^2.mV.mol.C^-1
 	//JKa = GK * PrKa * ( Va - VKa ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1
 	//JKb = GK * PrKb * ( Vb - VKb ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1
-  double JCl = s.GCl * PrCl * ( solvec(Va) + VCl) / F;
-  double JKa = s.GK * PrKa * ( solvec(Va) - VKa) / F;
-  double JKb = s.GK * PrKb * ( solvec(Vb) - VKb) / F;
+  double JCl = s.GCl * PrCl * ( x_ion(Va) + VCl) / F;
+  double JKa = s.GK * PrKa * ( x_ion(Va) - VKa) / F;
+  double JKb = s.GK * PrKb * ( x_ion(Vb) - VKb) / F;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Tight Junction Na+ and K+ currents
@@ -247,10 +260,10 @@ void cCell_flow::step(){
 	//Qt = param.B3 * ( 2 * ( Nal + Kl ) + param.Ul - ....
 	//                      ( param.Nae + param.Ke + param.Cle + param.HCO3e ) ); % micro-metres^3.s^-1
 	//Qtot=(Qa+Qt);                                     % micro-metres^3.s^-1
-  double Qa = p.at("B1") * ( 2 * ( solvec(Nal) + solvec(Kl) - solvec(Na) - solvec(K) - solvec(H) ) - p.at("CO20") + p.at("Ul") );
-  double Qb = p.at("B2") * ( 2 * ( solvec(Na) + solvec(K) + solvec(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
-  double t = p.at("B3") * ( 2 * ( solvec(Nal) + solvec(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
-  double Qt = p.at("B3") * ( 2 * ( solvec(Nal) + solvec(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+  double Qa = p.at("B1") * ( 2 * ( x_ion(Nal) + x_ion(Kl) - x_ion(Na) - x_ion(K) - x_ion(H) ) - p.at("CO20") + p.at("Ul") );
+  double Qb = p.at("B2") * ( 2 * ( x_ion(Na) + x_ion(K) + x_ion(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+  double t = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+  double Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
   double Qtot = Qa + Qt;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -258,24 +271,24 @@ void cCell_flow::step(){
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//JNkcc1 = aNkcc1 * Sb * ( param.a1 - param.a2 * Na * K * Cl^2 ) ...
 	//                                             / ( param.a3 + param.a4 * Na * K * Cl^2 );
-  double JNkcc1 = s.aNkcc1 * s.Sb * ( p.at("a1") - p.at("a2") * solvec(Na) * solvec(K) * pow(solvec(Cl),2) ) / 
-	  ( p.at("a3") + p.at("a4") * solvec(Na) * solvec(K) * pow(solvec(Cl),2) );
+  double JNkcc1 = s.aNkcc1 * s.Sb * ( p.at("a1") - p.at("a2") * x_ion(Na) * x_ion(K) * pow(x_ion(Cl),2) ) / 
+	  ( p.at("a3") + p.at("a4") * x_ion(Na) * x_ion(K) * pow(x_ion(Cl),2) );
        
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% (Na+)2 HCO3-/Cl- Anion exchanger (Ae4)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//JAe4 = Sb * G4 * ( ( param.Cle / ( param.Cle + param.KCl ) ) * ( Na / ( Na + param.KNa ) ) ...
 	//             * ( HCO3 / ( HCO3 + param.KB ) )^2 );       
-  double JAe4 = s.Sb * s.G4 * ( ( p.at("Cle") / ( p.at("Cle") + p.at("KCl") ) ) * ( solvec(Na) / 
-	  ( solvec(Na) + p.at("KNa") ) ) * pow( solvec(HCO3) / ( solvec(HCO3) + p.at("KB") ),2) );
+  double JAe4 = s.Sb * s.G4 * ( ( p.at("Cle") / ( p.at("Cle") + p.at("KCl") ) ) * ( x_ion(Na) / 
+	  ( x_ion(Na) + p.at("KNa") ) ) * pow( x_ion(HCO3) / ( x_ion(HCO3) + p.at("KB") ),2) );
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Na+ / H+ Anion exchanger (Nhe1)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//JNhe1 = Sb * G1 * ( ( param.Nae / ( param.Nae + param.KNa ) ) * ( H / ( param.KH + H ) )...
 	//                          - ( Na / ( Na + param.KNa ) ) * ( param.He / ( param.KH + param.He ) ) ); 
-  double JNhe1 = s.Sb * s.G1 * ( ( p.at("Nae") / ( p.at("Nae") + p.at("KNa") ) ) * ( solvec(H) / 
-	  ( p.at("KH") + solvec(H) ) ) - ( solvec(Na) / ( solvec(Na) + p.at("KNa") ) ) * ( p.at("He") / ( p.at("KH") + p.at("He") ) ) );
+  double JNhe1 = s.Sb * s.G1 * ( ( p.at("Nae") / ( p.at("Nae") + p.at("KNa") ) ) * ( x_ion(H) / 
+	  ( p.at("KH") + x_ion(H) ) ) - ( x_ion(Na) / ( x_ion(Na) + p.at("KNa") ) ) * ( p.at("He") / ( p.at("KH") + p.at("He") ) ) );
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Bicarbonate Buffer (Reaction Term)
@@ -283,7 +296,7 @@ void cCell_flow::step(){
 	//% This equation is a reaction inside the cell, note how it depends on the
 	//% cellular volume
 	//JBB = w * GB * ( param.kp * param.CO20 - param.kn * HCO3 * H ); 
-  double JBB = solvec(VOL) * s.GB * ( p.at("kp") * p.at("CO20") - p.at("kn") * solvec(HCO3) * solvec(H) );                 
+  double JBB = x_ion(VOL) * s.GB * ( p.at("kp") * p.at("CO20") - p.at("kn") * x_ion(HCO3) * x_ion(H) );                 
 
   // Equations
 //  dx(1) = ( JtNa - Qtot*Nal + 3*JNaKa )/param.wl(i);
@@ -298,23 +311,17 @@ void cCell_flow::step(){
 //  dx(10) = 100*(-JCl - JNaKa - JKa - JtK - JtNa);      % Note the arbitrary factor of 100, just to make sure Va is fast.
 //  dx(11) = 100*(     - JNaKb - JKb + JtK + JtNa);
 //  enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
-  double w = solvec(VOL);
-  solvec(Nal) = (JtNa - Qtot * solvec(Nal) + 3.0 * JNaKa) / s.wl;
-  solvec(Kl) = (JtK - Qtot * solvec(Kl) + JKa - 2.0 * JNaKa) / s.wl;
-  solvec(Cll) = (JCl - Qtot * solvec(Cll)) / s.wl;
-  solvec(VOL) = Qb - Qa;
-  solvec(Na) = (JNkcc1 - 3.0 * (JNaKb + JNaKa) + JNhe1 - JAe4 - solvec(VOL) * solvec(Na)) / w;
-  solvec(K) = (JNkcc1 + 2.0 * (JNaKb + JNaKa) - JKb - JKa - solvec(VOL) * solvec(K)) / w;
-  solvec(Cl) = (2.0 * JNkcc1 + JAe4 + JCl - solvec(VOL) * solvec(Cl)) / w;
-  solvec(HCO3) = (JBB - 2.0 * JAe4 - solvec(VOL) * solvec(HCO3)) / w;
-  solvec(H) = (JBB - JNhe1 - solvec(VOL) * solvec(H)) / w;
-  solvec(Va) = 100.0 * (-JCl - JNaKa - JKa - JtK - JtNa);  // Note the arbitrary factor of 100, just to make sure Va is fast.
-  solvec(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
- 
-  // invoke the solver here...
-  
-  
-  prev_solvec = solvec;
+  dx_ion(Nal) = (JtNa - Qtot * x_ion(Nal) + 3.0 * JNaKa) / s.wl;
+  dx_ion(Kl) = (JtK - Qtot * x_ion(Kl) + JKa - 2.0 * JNaKa) / s.wl;
+  dx_ion(Cll) = (JCl - Qtot * x_ion(Cll)) / s.wl;
+  dx_ion(VOL) = Qb - Qa;
+  dx_ion(Na) = (JNkcc1 - 3.0 * (JNaKb + JNaKa) + JNhe1 - JAe4 - x_ion(VOL) * x_ion(Na)) / x_ion(VOL);
+  dx_ion(K) = (JNkcc1 + 2.0 * (JNaKb + JNaKa) - JKb - JKa - x_ion(VOL) * x_ion(K)) / x_ion(VOL);
+  dx_ion(Cl) = (2.0 * JNkcc1 + JAe4 + JCl - x_ion(VOL) * x_ion(Cl)) / x_ion(VOL);
+  dx_ion(HCO3) = (JBB - 2.0 * JAe4 - x_ion(VOL) * x_ion(HCO3)) / x_ion(VOL);
+  dx_ion(H) = (JBB - JNhe1 - x_ion(VOL) * x_ion(H)) / x_ion(VOL);
+  dx_ion(Va) = 100.0 * (-JCl - JNaKa - JKa - JtK - JtNa);  // Note the arbitrary factor of 100, just to make sure Va is fast.
+  dx_ion(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
 }
 
 //out << "<Cell_calcium> initial volume: " << volume << std::endl;

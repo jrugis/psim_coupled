@@ -41,7 +41,7 @@ CPP_LIBS = -lsundials_cvodes
 EXE = ../run/psim_coupled
 #OBJS = main.o utils.o cAcinus.o cLumen.o cCVodes.o cCell_flow.o cCell_calcium.o cCellMesh.o
 #OBJS = main.o utils.o cAcinus.o cLumen.o cLumenTree.o cCell_calcium.o cCellMesh.o cCell_flow.o
-OBJS = main.o utils.o cAcinus.o cLumen.o cCell_calcium.o cCellMesh.o cCell_flow.o
+OBJS = main.o utils.o cAcinus.o cLumen.o cCell_calcium.o cCellMesh.o cCell_flow.o cCVode.o
 SRC = ./src
 
 all: $(EXE)
@@ -61,13 +61,13 @@ cLumen.o: $(SRC)/cLumen.cpp $(SRC)/cLumen.hpp $(SRC)/utils.hpp $(SRC)/global_def
 #cLumenTree.o: $(SRC)/cLumenTree.cpp $(SRC)/cLumenTree.hpp
 #	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
-#cCVodes.o: $(SRC)/cCVodes.cpp $(SRC)/cCVodes.hpp
-#	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
-
-cCell_flow.o: $(SRC)/cCell_flow.cpp $(SRC)/cCell_flow.hpp
+cCVode.o: $(SRC)/cCVode.cpp $(SRC)/cCVode.hpp $(SRC)/cCell_flow.hpp $(SRC)/global_defs.hpp $(SRC)/utils.hpp
 	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
-cCell_calcium.o: $(SRC)/cCell_calcium.cpp $(SRC)/cCell_calcium.hpp $(SRC)/cCellMesh.hpp $(SRC)/utils.hpp $(SRC)/global_defs.hpp
+cCell_flow.o: $(SRC)/cCell_flow.cpp $(SRC)/cCell_flow.hpp $(SRC)/cCVode.hpp $(SRC)/cCell_calcium.hpp $(SRC)/cCellMesh.hpp $(SRC)/global_defs.hpp
+	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
+
+cCell_calcium.o: $(SRC)/cCell_calcium.cpp $(SRC)/cCell_calcium.hpp $(SRC)/cCellMesh.hpp $(SRC)/utils.hpp $(SRC)/global_defs.hpp $(SRC)/cCell_calcium.hpp
 	$(CPP) $(CPP_FLAGS) $(CPP_INCLUDES) -o $@ -c $<
 
 cCellMesh.o: $(SRC)/cCellMesh.cpp $(SRC)/cCellMesh.hpp $(SRC)/cCell_calcium.hpp $(SRC)/utils.hpp $(SRC)/global_defs.hpp
