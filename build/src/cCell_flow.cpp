@@ -41,6 +41,7 @@ cCell_flow::cCell_flow(cCell_calcium* _parent)
 
   // initialise the solver
   cvode_solver = new cCVode(this, parent->out, p.at("odeSolverAbsTol"), p.at("odeSolverRelTol"));
+  cvode_solver->init(solvec);
 }
 
 cCell_flow::~cCell_flow() {
