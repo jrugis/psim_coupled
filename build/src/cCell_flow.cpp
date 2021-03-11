@@ -6,6 +6,8 @@
  */
 
 #include <iostream>
+#include <string>
+#include <iomanip>
 
 #include "global_defs.hpp"
 #include "cCellMesh.hpp"
@@ -34,6 +36,22 @@ cCell_flow::cCell_flow(cCell_calcium* _parent)
   p["VtK0"] = RTF * log(p.at("Kl0") / p.at("Ke"));
   p["VCl0"] = RTF * log(p.at("Cll0") / p.at("Cl0"));
   p["VK0"] = RTF * log(p.at("Ke") / p.at("K0"));
+
+  parent->out << "DEBUG: He = " << p["He"] << std::endl;
+  parent->out << "DEBUG: Cll0 = " << p["Cll0"] << std::endl;
+  parent->out << "DEBUG: Hl = " << p["Hl"] << std::endl;
+  parent->out << "DEBUG: HCO3l = " << p["HCO3l"] << std::endl;
+  parent->out << "DEBUG: H0 = " << p["H0"] << std::endl;
+  parent->out << "DEBUG: CO20 = " << p["CO20"] << std::endl;
+  parent->out << "DEBUG: Ul = " << p["Ul"] << std::endl;
+  parent->out << "DEBUG: Nae = " << p["Nae"] << std::endl;
+  parent->out << "DEBUG: Vt0 = " << p["Vt0"] << std::endl;
+  parent->out << "DEBUG: VtNa0 = " << p["VtNa0"] << std::endl;
+  parent->out << "DEBUG: VtK0 = " << p["VtK0"] << std::endl;
+  parent->out << "DEBUG: VCl0 = " << p["Vcl0"] << std::endl;
+  parent->out << "DEBUG: VK0 = " << p["VK0"] << std::endl;
+
+
   
   parent->out << "<Cell_flow> initialising solution vector and constant values" << std::endl;
   init_const();    // first initialise the constant values
@@ -113,6 +131,11 @@ void cCell_flow::init_const()
     double vAe4 = s.Sb *  ( ( p.at("Cle") / ( p.at("Cle") + p.at("KCl") ) ) *
 		( p.at("Na0") / ( p.at("Na0") + p.at("KNa") ) ) * pow( p.at("HCO30") / ( p.at("HCO30") + p.at("KB") ), 2) );
     s.G4 = ( JNkcc10 - 3 * JNaK0 + JNhe10 ) / vAe4;
+
+    s.GtNa = 10.0 * s.GtNa;
+    s.GtK = 10.0 * s.GtK;
+    s.GCl = 0.7 * s.GCl;
+    s.aNaK = 1.1 * s.aNaK;
 }	
 
 void cCell_flow::init_solvec()
@@ -146,6 +169,34 @@ void cCell_flow::step(double t, double dt){
   // TODO: precompute values here that don't depend on x_ion: PrCl, PrKa, PrKb
 
 
+
+
+  // DEBUGGING: run secretion function with initial conditions passed in and store output
+  std::string xfilename = parent->id + "_debugsecretion_xion.txt";
+  std::ofstream xfile;
+  xfile.open(xfilename);
+  xfile << std::fixed << std::setprecision(16);
+  for (int i = 0; i < IONCOUNT; i++) {
+    xfile << solvec(i) << std::endl;
+  }
+  xfile.close();
+
+  Array1IC dx;
+  secretion(t, solvec, dx);
+
+  std::string dxfilename = parent->id + "_debugsecretion_dxion.txt";
+  std::ofstream dxfile;
+  dxfile.open(dxfilename);
+  dxfile << std::fixed << std::setprecision(16);
+  for (int i = 0; i < IONCOUNT; i++) {
+    dxfile << dx(i) << std::endl;
+  }
+  dxfile.close();
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Abort(MPI_COMM_WORLD, 1);
+  // END DEBUGGING
+
   // invoke the solver here
   cvode_solver->run(t, t + dt, solvec);
   
@@ -154,6 +205,11 @@ void cCell_flow::step(double t, double dt){
 }
 
 void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
+  std::ofstream debugf;
+  debugf.open(parent->id + "_debugsecretion.txt");
+  debugf << std::fixed << std::setprecision(16);
+
+
 	// %% Currents and fluxes
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// % (3Na+)/(2K+) ATP-ase pump (NaK)
@@ -165,6 +221,13 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//  / ( param.Ke^2 + param.alpha1 * Na^3 ) );   
   double JNaKb = NaKbasalfactor*s.Sb*s.aNaK*(p.at("r")*pow(p.at("Ke"),2) * pow(x_ion(Na),3) / 
 	  ( pow(p.at("Ke"),2) + p.at("alpha1") * pow(x_ion(Na),3) ) );
+  debugf << "JNaKb = " << JNaKb << std::endl;
+  debugf << "  s.Sb = " << s.Sb << std::endl;
+  debugf << "  s.aNaK = " << s.aNaK << std::endl;
+  debugf << "  p.r = " << p.at("r") << std::endl;
+  debugf << "  p.Ke = " << p.at("Ke") << std::endl;
+  debugf << "  p.alpha1 = " << p.at("alpha1") << std::endl;
+  debugf << "  Na = " << x_ion(Na) << std::endl;
 
 	//JNaKa = (1-NaKbasalfactor)*Sa*aNaK*(param.r * Kl^2 * Na^3 ...
 	//  / ( Kl^2 + param.alpha1 * Na^3 ) ); 
@@ -246,6 +309,11 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   double JKa = s.GK * PrKa * ( x_ion(Va) - VKa) / F_CONST;
   double JKb = s.GK * PrKb * ( x_ion(Vb) - VKb) / F_CONST;
 
+  debugf << "JKa = " << JKa << std::endl;
+  debugf << "JKb = " << JKb << std::endl;
+
+
+
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Tight Junction Na+ and K+ currents
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -324,6 +392,8 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   dx_ion(H) = (JBB - JNhe1 - x_ion(VOL) * x_ion(H)) / x_ion(VOL);
   dx_ion(Va) = 100.0 * (-JCl - JNaKa - JKa - JtK - JtNa);  // Note the arbitrary factor of 100, just to make sure Va is fast.
   dx_ion(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
+
+  debugf.close();
 }
 
 //out << "<Cell_calcium> initial volume: " << volume << std::endl;
