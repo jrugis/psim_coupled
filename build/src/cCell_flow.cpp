@@ -239,21 +239,27 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//VCl = param.RTF * log( Cll / Cl );        
   double VCl = RTF * log( x_ion(Cll) / x_ion(Cl) );
+  debugf << "VCl = " << VCl << std::endl;
 
 	//VKb = param.RTF * log( param.Ke / K ); 
   double VKb = RTF * log( p.at("Ke") / x_ion(K));    
+  debugf << "VKb = " << VKb << std::endl;
 
 	//VKa = param.RTF * log( Kl / K );
   double VKa = RTF * log( x_ion(Kl) / x_ion(K));         
+  debugf << "VKa = " << VKa << std::endl;
 
 	//VtNa = param.RTF * log( Nal / param.Nae );
   double VtNa = RTF * log( x_ion(Nal) / p.at("Nae"));         
+  debugf << "VtNa = " << VtNa << std::endl;
 
 	//VtK = param.RTF * log( Kl / param.Ke );   
   double VtK = RTF * log( x_ion(Kl) / p.at("Ke"));         
+  debugf << "VtK = " << VtK << std::endl;
 
 	//Vt = Va - Vb;
   double Vt = x_ion(Va) - x_ion(Vb);
+  debugf << "Vt = " << Vt << std::endl;
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -282,10 +288,14 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
     ca_tri /= 3.0;  
 
     PCl += (1.0 / (1.0 + pow(p.at("KCaCC") / ca_tri, p.at("eta1")))) * area_tri;
-    PKa += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta1")))) * area_tri;
+    PKa += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta2")))) * area_tri;
   }
   double PrCl = PCl / s.Sa; 
   double PrKa = PKa / s.Sa; 
+  debugf << "s.Sa = " << s.Sa << std::endl;
+  debugf << "PrCl = " << PrCl << std::endl;
+  debugf << "p.KCaKC = " << p.at("KCaKC") << std::endl;
+  debugf << "PrKa = " << PrKa << std::endl;
 
   double PKb = 0.0;
   for (int n = 0; n < parent->mesh->basal_triangles_count; n++) { // basal tris
@@ -298,9 +308,10 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
       ca_tri += parent->solvec(vertex_index);  // note: Ca is first
     }
     ca_tri /= 3.0;  
-    PKb += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta1")))) * area_tri;
+    PKb += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta2")))) * area_tri;
   }
   double PrKb = PKb / s.Sb; 
+  debugf << "PrKb = " << PrKb << std::endl;
 
 	//JCl = GCl * PrCl * ( Va + VCl ) / param.F;  % fS.micro-metres^2.mV.mol.C^-1
 	//JKa = GK * PrKa * ( Va - VKa ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1

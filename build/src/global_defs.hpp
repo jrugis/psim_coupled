@@ -95,7 +95,8 @@ struct sMeshVals {
 // thermodynamic constants
 #define R 8.314462100000000
 #define T 310
-#define F_CONST 9.645833650000000e4  // _CONST because F is used in SUNDIALS already??
+//#define F_CONST 9.645833650000000e4  // _CONST because F is used in SUNDIALS already??
+#define F_CONST 9.648533650000000e4  // _CONST because F is used in SUNDIALS already??
 const double RTF = 1000.0 * R * T / F_CONST;
 
 //************************************************************************
