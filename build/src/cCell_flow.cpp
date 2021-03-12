@@ -206,8 +206,8 @@ void cCell_flow::step(double t, double dt){
 
 void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   std::ofstream debugf;
-  debugf.open(parent->id + "_debugsecretion.txt");
-  debugf << std::fixed << std::setprecision(16);
+//  debugf.open(parent->id + "_debugsecretion.txt");
+//  debugf << std::fixed << std::setprecision(16);
 
 
 	// %% Currents and fluxes
@@ -221,13 +221,13 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//  / ( param.Ke^2 + param.alpha1 * Na^3 ) );   
   double JNaKb = NaKbasalfactor*s.Sb*s.aNaK*(p.at("r")*pow(p.at("Ke"),2) * pow(x_ion(Na),3) / 
 	  ( pow(p.at("Ke"),2) + p.at("alpha1") * pow(x_ion(Na),3) ) );
-  debugf << "JNaKb = " << JNaKb << std::endl;
-  debugf << "  s.Sb = " << s.Sb << std::endl;
-  debugf << "  s.aNaK = " << s.aNaK << std::endl;
-  debugf << "  p.r = " << p.at("r") << std::endl;
-  debugf << "  p.Ke = " << p.at("Ke") << std::endl;
-  debugf << "  p.alpha1 = " << p.at("alpha1") << std::endl;
-  debugf << "  Na = " << x_ion(Na) << std::endl;
+//  debugf << "JNaKb = " << JNaKb << std::endl;
+//  debugf << "  s.Sb = " << s.Sb << std::endl;
+//  debugf << "  s.aNaK = " << s.aNaK << std::endl;
+//  debugf << "  p.r = " << p.at("r") << std::endl;
+//  debugf << "  p.Ke = " << p.at("Ke") << std::endl;
+//  debugf << "  p.alpha1 = " << p.at("alpha1") << std::endl;
+//  debugf << "  Na = " << x_ion(Na) << std::endl;
 
 	//JNaKa = (1-NaKbasalfactor)*Sa*aNaK*(param.r * Kl^2 * Na^3 ...
 	//  / ( Kl^2 + param.alpha1 * Na^3 ) ); 
@@ -239,27 +239,27 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//VCl = param.RTF * log( Cll / Cl );        
   double VCl = RTF * log( x_ion(Cll) / x_ion(Cl) );
-  debugf << "VCl = " << VCl << std::endl;
+//  debugf << "VCl = " << VCl << std::endl;
 
 	//VKb = param.RTF * log( param.Ke / K ); 
   double VKb = RTF * log( p.at("Ke") / x_ion(K));    
-  debugf << "VKb = " << VKb << std::endl;
+//  debugf << "VKb = " << VKb << std::endl;
 
 	//VKa = param.RTF * log( Kl / K );
   double VKa = RTF * log( x_ion(Kl) / x_ion(K));         
-  debugf << "VKa = " << VKa << std::endl;
+//  debugf << "VKa = " << VKa << std::endl;
 
 	//VtNa = param.RTF * log( Nal / param.Nae );
   double VtNa = RTF * log( x_ion(Nal) / p.at("Nae"));         
-  debugf << "VtNa = " << VtNa << std::endl;
+//  debugf << "VtNa = " << VtNa << std::endl;
 
 	//VtK = param.RTF * log( Kl / param.Ke );   
   double VtK = RTF * log( x_ion(Kl) / p.at("Ke"));         
-  debugf << "VtK = " << VtK << std::endl;
+//  debugf << "VtK = " << VtK << std::endl;
 
 	//Vt = Va - Vb;
   double Vt = x_ion(Va) - x_ion(Vb);
-  debugf << "Vt = " << Vt << std::endl;
+//  debugf << "Vt = " << Vt << std::endl;
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -292,10 +292,10 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   }
   double PrCl = PCl / s.Sa; 
   double PrKa = PKa / s.Sa; 
-  debugf << "s.Sa = " << s.Sa << std::endl;
-  debugf << "PrCl = " << PrCl << std::endl;
-  debugf << "p.KCaKC = " << p.at("KCaKC") << std::endl;
-  debugf << "PrKa = " << PrKa << std::endl;
+//  debugf << "s.Sa = " << s.Sa << std::endl;
+//  debugf << "PrCl = " << PrCl << std::endl;
+//  debugf << "p.KCaKC = " << p.at("KCaKC") << std::endl;
+//  debugf << "PrKa = " << PrKa << std::endl;
 
   double PKb = 0.0;
   for (int n = 0; n < parent->mesh->basal_triangles_count; n++) { // basal tris
@@ -311,7 +311,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
     PKb += (1.0 / (1.0 + pow(p.at("KCaKC") / ca_tri, p.at("eta2")))) * area_tri;
   }
   double PrKb = PKb / s.Sb; 
-  debugf << "PrKb = " << PrKb << std::endl;
+//  debugf << "PrKb = " << PrKb << std::endl;
 
 	//JCl = GCl * PrCl * ( Va + VCl ) / param.F;  % fS.micro-metres^2.mV.mol.C^-1
 	//JKa = GK * PrKa * ( Va - VKa ) / param.F;   % fS.micro-metres^2.mV.mol.C^-1
@@ -320,8 +320,8 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   double JKa = s.GK * PrKa * ( x_ion(Va) - VKa) / F_CONST;
   double JKb = s.GK * PrKb * ( x_ion(Vb) - VKb) / F_CONST;
 
-  debugf << "JKa = " << JKa << std::endl;
-  debugf << "JKb = " << JKb << std::endl;
+//  debugf << "JKa = " << JKa << std::endl;
+//  debugf << "JKb = " << JKb << std::endl;
 
 
 
@@ -332,8 +332,8 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//JtK = GtK * St * ( Vt - VtK ) / param.F;      % fS.micro-metres^2.mV.mol.C^-1
   double JtNa = s.GtNa * s.St * ( Vt - VtNa ) / F_CONST;
   double JtK = s.GtK * s.St * ( Vt - VtK ) / F_CONST;
-  debugf << "JtNa = " << JtNa << std::endl;
-  debugf << "JtK = " << JtK << std::endl;
+//  debugf << "JtNa = " << JtNa << std::endl;
+//  debugf << "JtK = " << JtK << std::endl;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Osmolarities 
@@ -349,10 +349,10 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   double Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
   double Qtot = Qa + Qt;
 
-  debugf << "Qa = " << Qa << std::endl;
-  debugf << "Qb = " << Qb << std::endl;
-  debugf << "Qt = " << Qt << std::endl;
-  debugf << "Qtot = " << Qtot << std::endl;
+//  debugf << "Qa = " << Qa << std::endl;
+//  debugf << "Qb = " << Qb << std::endl;
+//  debugf << "Qt = " << Qt << std::endl;
+//  debugf << "Qtot = " << Qtot << std::endl;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Na+ K+ 2Cl- co-transporter (Nkcc1)
@@ -361,8 +361,8 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//                                             / ( param.a3 + param.a4 * Na * K * Cl^2 );
   double JNkcc1 = s.aNkcc1 * s.Sb * ( p.at("a1") - p.at("a2") * x_ion(Na) * x_ion(K) * pow(x_ion(Cl),2) ) / 
 	  ( p.at("a3") + p.at("a4") * x_ion(Na) * x_ion(K) * pow(x_ion(Cl),2) );
-  debugf << "JNkcc1 = " << JNkcc1 << std::endl;
-  debugf << "  s.aNkcc1 = " << s.aNkcc1 << std::endl;
+//  debugf << "JNkcc1 = " << JNkcc1 << std::endl;
+//  debugf << "  s.aNkcc1 = " << s.aNkcc1 << std::endl;
 
        
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -372,7 +372,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//             * ( HCO3 / ( HCO3 + param.KB ) )^2 );       
   double JAe4 = s.Sb * s.G4 * ( ( p.at("Cle") / ( p.at("Cle") + p.at("KCl") ) ) * ( x_ion(Na) / 
 	  ( x_ion(Na) + p.at("KNa") ) ) * pow( x_ion(HCO3) / ( x_ion(HCO3) + p.at("KB") ),2) );
-  debugf << "JAe4 = " << JAe4 << std::endl;
+//  debugf << "JAe4 = " << JAe4 << std::endl;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Na+ / H+ Anion exchanger (Nhe1)
@@ -381,7 +381,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//                          - ( Na / ( Na + param.KNa ) ) * ( param.He / ( param.KH + param.He ) ) ); 
   double JNhe1 = s.Sb * s.G1 * ( ( p.at("Nae") / ( p.at("Nae") + p.at("KNa") ) ) * ( x_ion(H) / 
 	  ( p.at("KH") + x_ion(H) ) ) - ( x_ion(Na) / ( x_ion(Na) + p.at("KNa") ) ) * ( p.at("He") / ( p.at("KH") + p.at("He") ) ) );
-  debugf << "JNhe1 = " << JNhe1 << std::endl;
+//  debugf << "JNhe1 = " << JNhe1 << std::endl;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Bicarbonate Buffer (Reaction Term)
@@ -390,7 +390,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//% cellular volume
 	//JBB = w * GB * ( param.kp * param.CO20 - param.kn * HCO3 * H ); 
   double JBB = x_ion(VOL) * s.GB * ( p.at("kp") * p.at("CO20") - p.at("kn") * x_ion(HCO3) * x_ion(H) );                 
-  debugf << "JBB = " << JBB << std::endl;
+//  debugf << "JBB = " << JBB << std::endl;
 
   // Equations
 //  dx(1) = ( JtNa - Qtot*Nal + 3*JNaKa )/param.wl(i);
@@ -409,29 +409,29 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   dx_ion(Kl) = (JtK - Qtot * x_ion(Kl) + JKa - 2.0 * JNaKa) / s.wl;
   dx_ion(Cll) = (-JCl - Qtot * x_ion(Cll)) / s.wl;
   dx_ion(VOL) = Qb - Qa;
-  dx_ion(Na) = (JNkcc1 - 3.0 * (JNaKb + JNaKa) + JNhe1 - JAe4 - x_ion(VOL) * x_ion(Na)) / x_ion(VOL);
-  dx_ion(K) = (JNkcc1 + 2.0 * (JNaKb + JNaKa) - JKb - JKa - x_ion(VOL) * x_ion(K)) / x_ion(VOL);
-  dx_ion(Cl) = (2.0 * JNkcc1 + JAe4 + JCl - x_ion(VOL) * x_ion(Cl)) / x_ion(VOL);
-  dx_ion(HCO3) = (JBB - 2.0 * JAe4 - x_ion(VOL) * x_ion(HCO3)) / x_ion(VOL);
-  dx_ion(H) = (JBB - JNhe1 - x_ion(VOL) * x_ion(H)) / x_ion(VOL);
+  dx_ion(Na) = (JNkcc1 - 3.0 * (JNaKb + JNaKa) + JNhe1 - JAe4 - dx_ion(VOL) * x_ion(Na)) / x_ion(VOL);
+  dx_ion(K) = (JNkcc1 + 2.0 * (JNaKb + JNaKa) - JKb - JKa - dx_ion(VOL) * x_ion(K)) / x_ion(VOL);
+  dx_ion(Cl) = (2.0 * JNkcc1 + JAe4 + JCl - dx_ion(VOL) * x_ion(Cl)) / x_ion(VOL);
+  dx_ion(HCO3) = (JBB - 2.0 * JAe4 - dx_ion(VOL) * x_ion(HCO3)) / x_ion(VOL);
+  dx_ion(H) = (JBB - JNhe1 - dx_ion(VOL) * x_ion(H)) / x_ion(VOL);
   dx_ion(Va) = 100.0 * (-JCl - JNaKa - JKa - JtK - JtNa);  // Note the arbitrary factor of 100, just to make sure Va is fast.
   dx_ion(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
 
-  debugf << std::endl;
-  debugf << "dx(1) = " << dx_ion(Nal) << std::endl;
-  debugf << "dx(2) = " << dx_ion(Kl) << std::endl;
-  debugf << "dx(3) = " << dx_ion(Cll) << std::endl;
-  debugf << "dx(4) = " << dx_ion(VOL) << std::endl;
-  debugf << "dx(5) = " << dx_ion(Na) << std::endl;
-  debugf << "dx(6) = " << dx_ion(K) << std::endl;
-  debugf << "dx(7) = " << dx_ion(Cl) << std::endl;
-  debugf << "dx(8) = " << dx_ion(HCO3) << std::endl;
-  debugf << "dx(9) = " << dx_ion(H) << std::endl;
-  debugf << "dx(10) = " << dx_ion(Va) << std::endl;
-  debugf << "dx(11) = " << dx_ion(Vb) << std::endl;
-
-
-  debugf.close();
+//  debugf << std::endl;
+//  debugf << "dx(1) = " << dx_ion(Nal) << std::endl;
+//  debugf << "dx(2) = " << dx_ion(Kl) << std::endl;
+//  debugf << "dx(3) = " << dx_ion(Cll) << std::endl;
+//  debugf << "dx(4) = " << dx_ion(VOL) << std::endl;
+//  debugf << "dx(5) = " << dx_ion(Na) << std::endl;
+//  debugf << "dx(6) = " << dx_ion(K) << std::endl;
+//  debugf << "dx(7) = " << dx_ion(Cl) << std::endl;
+//  debugf << "dx(8) = " << dx_ion(HCO3) << std::endl;
+//  debugf << "dx(9) = " << dx_ion(H) << std::endl;
+//  debugf << "dx(10) = " << dx_ion(Va) << std::endl;
+//  debugf << "dx(11) = " << dx_ion(Vb) << std::endl;
+//
+//
+//  debugf.close();
 }
 
 //out << "<Cell_calcium> initial volume: " << volume << std::endl;
