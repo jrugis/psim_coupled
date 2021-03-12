@@ -332,6 +332,8 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//JtK = GtK * St * ( Vt - VtK ) / param.F;      % fS.micro-metres^2.mV.mol.C^-1
   double JtNa = s.GtNa * s.St * ( Vt - VtNa ) / F_CONST;
   double JtK = s.GtK * s.St * ( Vt - VtK ) / F_CONST;
+  debugf << "JtNa = " << JtNa << std::endl;
+  debugf << "JtK = " << JtK << std::endl;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Osmolarities 
@@ -346,6 +348,11 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   double Qb = p.at("B2") * ( 2 * ( x_ion(Na) + x_ion(K) + x_ion(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
   double Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
   double Qtot = Qa + Qt;
+
+  debugf << "Qa = " << Qa << std::endl;
+  debugf << "Qb = " << Qb << std::endl;
+  debugf << "Qt = " << Qt << std::endl;
+  debugf << "Qtot = " << Qtot << std::endl;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Na+ K+ 2Cl- co-transporter (Nkcc1)
@@ -354,6 +361,9 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//                                             / ( param.a3 + param.a4 * Na * K * Cl^2 );
   double JNkcc1 = s.aNkcc1 * s.Sb * ( p.at("a1") - p.at("a2") * x_ion(Na) * x_ion(K) * pow(x_ion(Cl),2) ) / 
 	  ( p.at("a3") + p.at("a4") * x_ion(Na) * x_ion(K) * pow(x_ion(Cl),2) );
+  debugf << "JNkcc1 = " << JNkcc1 << std::endl;
+  debugf << "  s.aNkcc1 = " << s.aNkcc1 << std::endl;
+
        
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% (Na+)2 HCO3-/Cl- Anion exchanger (Ae4)
@@ -362,6 +372,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//             * ( HCO3 / ( HCO3 + param.KB ) )^2 );       
   double JAe4 = s.Sb * s.G4 * ( ( p.at("Cle") / ( p.at("Cle") + p.at("KCl") ) ) * ( x_ion(Na) / 
 	  ( x_ion(Na) + p.at("KNa") ) ) * pow( x_ion(HCO3) / ( x_ion(HCO3) + p.at("KB") ),2) );
+  debugf << "JAe4 = " << JAe4 << std::endl;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Na+ / H+ Anion exchanger (Nhe1)
@@ -370,6 +381,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//                          - ( Na / ( Na + param.KNa ) ) * ( param.He / ( param.KH + param.He ) ) ); 
   double JNhe1 = s.Sb * s.G1 * ( ( p.at("Nae") / ( p.at("Nae") + p.at("KNa") ) ) * ( x_ion(H) / 
 	  ( p.at("KH") + x_ion(H) ) ) - ( x_ion(Na) / ( x_ion(Na) + p.at("KNa") ) ) * ( p.at("He") / ( p.at("KH") + p.at("He") ) ) );
+  debugf << "JNhe1 = " << JNhe1 << std::endl;
   
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//% Bicarbonate Buffer (Reaction Term)
@@ -378,6 +390,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//% cellular volume
 	//JBB = w * GB * ( param.kp * param.CO20 - param.kn * HCO3 * H ); 
   double JBB = x_ion(VOL) * s.GB * ( p.at("kp") * p.at("CO20") - p.at("kn") * x_ion(HCO3) * x_ion(H) );                 
+  debugf << "JBB = " << JBB << std::endl;
 
   // Equations
 //  dx(1) = ( JtNa - Qtot*Nal + 3*JNaKa )/param.wl(i);
@@ -394,7 +407,7 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 //  enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
   dx_ion(Nal) = (JtNa - Qtot * x_ion(Nal) + 3.0 * JNaKa) / s.wl;
   dx_ion(Kl) = (JtK - Qtot * x_ion(Kl) + JKa - 2.0 * JNaKa) / s.wl;
-  dx_ion(Cll) = (JCl - Qtot * x_ion(Cll)) / s.wl;
+  dx_ion(Cll) = (-JCl - Qtot * x_ion(Cll)) / s.wl;
   dx_ion(VOL) = Qb - Qa;
   dx_ion(Na) = (JNkcc1 - 3.0 * (JNaKb + JNaKa) + JNhe1 - JAe4 - x_ion(VOL) * x_ion(Na)) / x_ion(VOL);
   dx_ion(K) = (JNkcc1 + 2.0 * (JNaKb + JNaKa) - JKb - JKa - x_ion(VOL) * x_ion(K)) / x_ion(VOL);
@@ -403,6 +416,20 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   dx_ion(H) = (JBB - JNhe1 - x_ion(VOL) * x_ion(H)) / x_ion(VOL);
   dx_ion(Va) = 100.0 * (-JCl - JNaKa - JKa - JtK - JtNa);  // Note the arbitrary factor of 100, just to make sure Va is fast.
   dx_ion(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
+
+  debugf << std::endl;
+  debugf << "dx(1) = " << dx_ion(Nal) << std::endl;
+  debugf << "dx(2) = " << dx_ion(Kl) << std::endl;
+  debugf << "dx(3) = " << dx_ion(Cll) << std::endl;
+  debugf << "dx(4) = " << dx_ion(VOL) << std::endl;
+  debugf << "dx(5) = " << dx_ion(Na) << std::endl;
+  debugf << "dx(6) = " << dx_ion(K) << std::endl;
+  debugf << "dx(7) = " << dx_ion(Cl) << std::endl;
+  debugf << "dx(8) = " << dx_ion(HCO3) << std::endl;
+  debugf << "dx(9) = " << dx_ion(H) << std::endl;
+  debugf << "dx(10) = " << dx_ion(Va) << std::endl;
+  debugf << "dx(11) = " << dx_ion(Vb) << std::endl;
+
 
   debugf.close();
 }
