@@ -83,4 +83,4 @@ $(EXE): $(OBJS)
 	$(CPP) $(CPP_FLAGS) $(CPP_LIBS) -o $@ $+
 
 clean:
-	rm *.o
+	rm -f *.o

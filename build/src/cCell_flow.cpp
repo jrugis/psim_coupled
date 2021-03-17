@@ -17,7 +17,7 @@
 #include "cLSODA.hpp"
 #include "utils.hpp"
 
-#define DEBUGFLOW 1
+//#define DEBUGFLOW 1
 
 // cCell_flow::cCell_flow(int index, double parms[], std::ofstream& out) {
 cCell_flow::cCell_flow(cCell_calcium* _parent) : solver_initialised(false)
@@ -226,8 +226,6 @@ void cCell_flow::step(double t, double dt){
 //  MPI_Barrier(MPI_COMM_WORLD);
 //  MPI_Abort(MPI_COMM_WORLD, 1);
   // END DEBUGGING
-  
-  parent->out << "DEBUG: Calling solver..." << std::endl;
 #endif
 
   // invoke the solver here
@@ -237,10 +235,6 @@ void cCell_flow::step(double t, double dt){
   else if (p.at("odeSolver") == 1) {
     lsoda_solver->run(t, t + dt, solvec);
   }
-
-#ifdef DEBUGFLOW
-  parent->out << "... solver finished." << std::endl;
-#endif
   
   // store solution
   prev_solvec = solvec;

@@ -64,7 +64,7 @@ void utils::get_parameters(const std::string file_id, int cell_num, std::unorder
   }
   out << std::endl;
   model_file.close();
-};
+}
 
 double utils::get_distance(const Vector3d& p, const Vector3d& v, const Vector3d& w)
 {
