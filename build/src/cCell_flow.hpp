@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include "global_defs.hpp"
 #include "cCVode.hpp"
+#include "cLSODA.hpp"
+
 
 class cCell_calcium;
 
@@ -35,9 +37,12 @@ class cCell_flow {
   //int cell_number;
   Array1IC solvec, prev_solvec;   // solution vectors for ions
   constant_values s;              // secretion constants vector
+  bool solver_initialised;
   cCVode* cvode_solver;
+  cLSODA* lsoda_solver;
   void init_solvec();
   void init_const();
+  void init_solver();
 };
 
 #endif /* CCELL_FLOW_H_ */
