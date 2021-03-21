@@ -17,7 +17,7 @@
 #include "cLSODA.hpp"
 #include "utils.hpp"
 
-//#define DEBUGFLOW 1
+#define DEBUGFLOW 1
 
 // cCell_flow::cCell_flow(int index, double parms[], std::ofstream& out) {
 cCell_flow::cCell_flow(cCell_calcium* _parent) : solver_initialised(false)
@@ -128,6 +128,19 @@ void cCell_flow::init_const()
     double vNaK = s.Sb * ( p.at("r") * pow(p.at("Ke"), 2) * pow(p.at("Na0"), 3)
         / ( pow(p.at("Ke"), 2) + p.at("alpha1") * pow(p.at("Na0"), 3) ) );                  
     s.aNaK = ( ( JtNa0 + JtK0 ) - JNkcc10 ) / ( 3 * vNaK);
+#ifdef DEBUGFLOW
+    parent->out << std::fixed << std::setprecision(16);
+    parent->out << "DEBUGFLOW: s.aNaK = " << s.aNaK << std::endl;
+    parent->out << "DEBUGFLOW:   JtNa0 = " << JtNa0 << std::endl;
+    parent->out << "DEBUGFLOW:   JtK0 = " << JtK0 << std::endl;
+    parent->out << "DEBUGFLOW:   JNkcc10 = " << JNkcc10 << std::endl;
+    parent->out << "DEBUGFLOW:   vNaK = " << vNaK << std::endl;
+    parent->out << "DEBUGFLOW:     s.Sb = " << s.Sb << std::endl;
+    parent->out << "DEBUGFLOW:     p.Ke = " << p.at("Ke") << std::endl;
+    parent->out << "DEBUGFLOW:     p.Na0 = " << p.at("Na0") << std::endl;
+    parent->out << "DEBUGFLOW:     p.alpha1 = " << p.at("alpha1") << std::endl;
+    
+#endif
 
     // Ca2+ activated K+ channel GK
     double PKb = 1.0 / ( 1.0 + pow( p.at("KCaKC") / p.at("c0"), p.at("eta2") ));
@@ -223,8 +236,8 @@ void cCell_flow::step(double t, double dt){
   }
   dxfile.close();
 
-//  MPI_Barrier(MPI_COMM_WORLD);
-//  MPI_Abort(MPI_COMM_WORLD, 1);
+  //MPI_Barrier(MPI_COMM_WORLD);
+  //MPI_Abort(MPI_COMM_WORLD, 1);
   // END DEBUGGING
 #endif
 
@@ -235,6 +248,20 @@ void cCell_flow::step(double t, double dt){
   else if (p.at("odeSolver") == 1) {
     lsoda_solver->run(t, t + dt, solvec);
   }
+
+#ifdef DEBUGFLOW
+  std::string solfilename = parent->id + "_debugflowsol.txt";
+  std::ofstream solfile;
+  solfile.open(solfilename);
+  solfile << std::fixed << std::setprecision(16);
+  for (int i = 0; i < IONCOUNT; i++) {
+    solfile << solvec(i) << std::endl;
+  }
+  solfile.close();
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Abort(MPI_COMM_WORLD, 1);
+#endif
   
   // store solution
   prev_solvec = solvec;
