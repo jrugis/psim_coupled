@@ -445,8 +445,8 @@ void cCell_calcium::run()
   double delta_time, current_time;
   double prev_delta_time = 0.0;
   MPI_Status stat;
-  struct timespec start, end;
-  double elapsed;
+  struct timespec start, end, flow_start, flow_end;
+  double elapsed, flow_elapsed;
   int np = mesh->mesh_vals.vertices_count;
   double V0 = element_data.col(VOL_e).sum();  // initial volume
 
@@ -481,7 +481,10 @@ void cCell_calcium::run()
     volume_term2 = flow->prev_dsolvec(VOL) / flow->prev_solvec(VOL);  // volume derivative divided by current volume
 
     // calculate the fluid flow
+    clock_gettime(CLOCK_REALTIME, &flow_start);
     if(p.at("fluidFlow")) flow->step(current_time, delta_time);
+    clock_gettime(CLOCK_REALTIME, &flow_end);
+    flow_elapsed = (flow_end.tv_sec - flow_start.tv_sec) + ((flow_end.tv_nsec - flow_start.tv_nsec) / 1e9);
 	
     if (delta_time != prev_delta_time) { // recalculate A matrix if time step changed
       sparseA = sparseMass + (delta_time * sparseStiff);
@@ -507,7 +510,7 @@ void cCell_calcium::run()
     clock_gettime(CLOCK_REALTIME, &end);
     elapsed = (end.tv_sec - start.tv_sec) + ((end.tv_nsec - start.tv_nsec) / 1e9);
     out << std::fixed << std::setprecision(3);
-    out << "<Cell_calcium> solver duration: " << elapsed << "s" << std::endl;
+    out << "<Cell_calcium> flow duration: " << flow_elapsed << "s ; solver duration: " << elapsed << "s" << std::endl;
 
     // check solver error and send it to acinus
     // ...

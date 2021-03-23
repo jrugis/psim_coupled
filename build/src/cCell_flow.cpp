@@ -160,7 +160,6 @@ void cCell_flow::init_solvec()
   
   // initialise derivative to zero
   dsolvec.setZero();
-  parent->out << dsolvec << std::endl;
   
   prev_solvec = solvec;
   prev_dsolvec = dsolvec;
@@ -193,6 +192,7 @@ void cCell_flow::step(double t, double dt){
   // invoke the solver here
   if (p.at("odeSolver") == 0) {
     cvode_solver->run(t, t + dt, solvec);
+    //cvode_solver->PrintFinalStatsBrief();
   }
   else if (p.at("odeSolver") == 1) {
     lsoda_solver->run(t, t + dt, solvec);

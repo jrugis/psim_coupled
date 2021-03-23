@@ -154,8 +154,8 @@ void cCVode::run(realtype t, realtype tout, Array1IC& yout)
   if (retval != CV_SUCCESS) { utils::fatal_error("CVode did not succeed", out); }
 
   /* Print some final statistics */
-  //  PrintFinalStatsDetailed(cvode_mem);
-  PrintFinalStatsBrief(cvode_mem);
+  //  PrintFinalStatsDetailed();
+  //  PrintFinalStatsBrief();
 
   /* store result for passing back */
   for (sunindextype i = 0; i < nvars; i++) { yout(i) = NV_Ith_S(y, i); }
@@ -165,7 +165,7 @@ void cCVode::run(realtype t, realtype tout, Array1IC& yout)
  * Get and print some final statistics
  */
 
-void cCVode::PrintFinalStatsBrief(void* cvode_mem)
+void cCVode::PrintFinalStatsBrief()
 {
   long int nst, nfe;
   int retval;
@@ -179,7 +179,7 @@ void cCVode::PrintFinalStatsBrief(void* cvode_mem)
   out << "num_steps = " << nfe << " num_func_calls = " << nfe << std::endl;
 }
 
-void cCVode::PrintFinalStatsDetailed(void* cvode_mem)
+void cCVode::PrintFinalStatsDetailed()
 {
   long int nst, nfe, nsetups, nje, nfeLS, nni, ncfn, netf, nge;
   int retval;

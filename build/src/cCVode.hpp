@@ -20,6 +20,8 @@ class cCVode {
   ~cCVode();
   void init(Array1IC& yini);
   void run(realtype t, realtype tend, Array1IC& yout);
+  void PrintFinalStatsBrief();
+  void PrintFinalStatsDetailed();
 
   private:
   cCell_flow* flow;
@@ -33,8 +35,6 @@ class cCVode {
   realtype abstol, reltol;
 
   void check_retval(void* returnvalue, std::string funcname, int opt);
-  void PrintFinalStatsBrief(void* cvode_mem);
-  void PrintFinalStatsDetailed(void* cvode_mem);
 };
 
 #endif
