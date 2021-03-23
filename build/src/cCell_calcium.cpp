@@ -525,6 +525,7 @@ void cCell_calcium::run()
       save_results(ca_file, 0);  // 0 = calcium
       save_results(ip3_file, 1); // 1 = ip3
       save_results(cer_file, 2); // 2 = cer
+      flow->save_results();
     }
   }
 }

@@ -31,6 +31,7 @@ class cCell_flow {
   Array1IC solvec, prev_solvec, dsolvec, prev_dsolvec;   // solution vectors for ions
   void step(double t, double dt);
   void secretion(double t, Array1IC& x_ion, Array1IC& dx_ion);
+  void save_results();
 
   private:
   cCell_calcium* parent;
@@ -44,7 +45,6 @@ class cCell_flow {
   void init_solvec();
   void init_const();
   void init_solver();
-  void save_results(std::ofstream& data_file);
   void compute_osmolarities(Array1IC& x_ion, double& Qa, double& Qb, double& Qt);
 };
 

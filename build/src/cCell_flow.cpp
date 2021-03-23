@@ -204,7 +204,6 @@ void cCell_flow::step(double t, double dt){
   // store solution
   prev_solvec = solvec;
   prev_dsolvec = dsolvec;
-  save_results(ion_file);
 }
 
 void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
@@ -392,7 +391,7 @@ void cCell_flow::compute_osmolarities(Array1IC& x_ion, double& Qa, double& Qb, d
   Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
 }
 
-void cCell_flow::save_results(std::ofstream& data_file)
+void cCell_flow::save_results()
 {
   // computing Qtot and storing in output file too for use in post-processing (computing fluid flow)
   double Qa, Qb, Qt;
@@ -403,6 +402,6 @@ void cCell_flow::save_results(std::ofstream& data_file)
   float* fbuf = new float[nv];  // +1 because we also store Qtot
   for (int n = 0; n < IONCOUNT; n++) fbuf[n] = solvec[n]; // convert to float for reduced file size
   fbuf[IONCOUNT] = Qtot;
-  data_file.write(reinterpret_cast<char*>(fbuf), nv * sizeof(float));
+  ion_file.write(reinterpret_cast<char*>(fbuf), nv * sizeof(float));
   delete [] fbuf;
 }
