@@ -315,7 +315,9 @@ Array1VC cCell_calcium::get_body_reactions(double c, double ip, double ce, doubl
   reactions(1) = vplc - vdeg;
   reactions(2) = -reactions(0) / p.at("Gamma");
 
-  // reactions *= volume_scaling;
+  // scale reaction terms by (at_rest_volume / new_volume)
+  reactions *= volume_term1;
+
   return reactions;
 }
 
@@ -357,9 +359,10 @@ MatrixN1d cCell_calcium::make_load(bool plc)
       get_body_reactions(cav, ipav, ceav, double(plc ? element_data(n, PLC_e) : 0.0));
 
     for (int i = 0; i < 4; i++) {                                    // for each tetrahedron vertex
-      load_c(vi(i)) += element_data(n, VOL_e) * 0.25 * reactions(0); // reaction terms, scaled by 1/4 volume
-      load_ip(vi(i)) += element_data(n, VOL_e) * 0.25 * reactions(1);
-      load_ce(vi(i)) += element_data(n, VOL_e) * 0.25 * reactions(2);
+      // reaction terms, scaled by 1/4 volume
+      load_c(vi(i)) += element_data(n, VOL_e) * 0.25 * (reactions(0) - volume_term2 * c(vi(i)));
+      load_ip(vi(i)) += element_data(n, VOL_e) * 0.25 * (reactions(1) - volume_term2 * ip(vi(i)));
+      load_ce(vi(i)) += element_data(n, VOL_e) * 0.25 * (reactions(2) - volume_term2 * ce(vi(i)));
     }
   }
 
@@ -445,6 +448,7 @@ void cCell_calcium::run()
   struct timespec start, end;
   double elapsed;
   int np = mesh->mesh_vals.vertices_count;
+  double V0 = element_data.col(VOL_e).sum();  // initial volume
 
   MatrixN1d rhs; // the right-hand-side vector
   rhs.resize(DIFVARS * np, Eigen::NoChange);
@@ -471,6 +475,10 @@ void cCell_calcium::run()
     out << "<Cell_calcium> step: " << step << " current_time: " << current_time << "s";
     out << " delta_time: " << delta_time << "s" << std::endl;
     plc = ((current_time >= p.at("PLCsrt")) and (current_time <= p.at("PLCfin"))); // PLC on or off?
+
+    // coupling flow back to calcium model
+    volume_term1 = V0 / flow->prev_solvec(VOL); // at rest volume divided by current volume
+    volume_term2 = flow->prev_dsolvec(VOL) / flow->prev_solvec(VOL);  // volume derivative divided by current volume
 
     // calculate the fluid flow
     if(p.at("fluidFlow")) flow->step(current_time, delta_time);

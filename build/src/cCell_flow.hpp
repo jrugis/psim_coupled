@@ -28,6 +28,7 @@ class cCell_flow {
   cCell_flow(cCell_calcium* parent);
   ~cCell_flow();
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW   // required when using fixed-size vectorizable Eigen object(s)
+  Array1IC solvec, prev_solvec, dsolvec, prev_dsolvec;   // solution vectors for ions
   void step(double t, double dt);
   void secretion(double t, Array1IC& x_ion, Array1IC& dx_ion);
 
@@ -35,14 +36,16 @@ class cCell_flow {
   cCell_calcium* parent;
   std::unordered_map<std::string, double> p;
   //int cell_number;
-  Array1IC solvec, prev_solvec;   // solution vectors for ions
   constant_values s;              // secretion constants vector
   bool solver_initialised;
   cCVode* cvode_solver;
   cLSODA* lsoda_solver;
+  std::ofstream ion_file;
   void init_solvec();
   void init_const();
   void init_solver();
+  void save_results(std::ofstream& data_file);
+  void compute_osmolarities(Array1IC& x_ion, double& Qa, double& Qb, double& Qt);
 };
 
 #endif /* CCELL_FLOW_H_ */

@@ -43,6 +43,8 @@ cCell_flow::cCell_flow(cCell_calcium* _parent) : solver_initialised(false)
   init_const();    // first initialise the constant values
   init_solvec();   // initialise solution buffer
   init_solver();   // initialise the solver
+
+  ion_file.open(parent->id + "_ion.bin", std::ios::binary);
 }
 
 cCell_flow::~cCell_flow() {
@@ -54,6 +56,7 @@ cCell_flow::~cCell_flow() {
       delete lsoda_solver;
     }
   }
+  ion_file.close();
 }
 
 void cCell_flow::init_const()
@@ -154,6 +157,13 @@ void cCell_flow::init_solvec()
   solvec(Va) = p.at("Va0");
   solvec(Vb) = p.at("Vb0");
   //std::cerr << "Cell:" << parent->id << " <Cell_flow> H: " << prev_solvec(H) << std::endl;
+  
+  // initialise derivative to zero
+  dsolvec.setZero();
+  parent->out << dsolvec << std::endl;
+  
+  prev_solvec = solvec;
+  prev_dsolvec = dsolvec;
 }
 
 void cCell_flow::init_solver()
@@ -188,8 +198,13 @@ void cCell_flow::step(double t, double dt){
     lsoda_solver->run(t, t + dt, solvec);
   }
 
+  // compute derivative too (for coupling)
+  secretion(t, solvec, dsolvec);
+
   // store solution
   prev_solvec = solvec;
+  prev_dsolvec = dsolvec;
+  save_results(ion_file);
 }
 
 void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
@@ -302,9 +317,11 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
 	//Qt = param.B3 * ( 2 * ( Nal + Kl ) + param.Ul - ....
 	//                      ( param.Nae + param.Ke + param.Cle + param.HCO3e ) ); % micro-metres^3.s^-1
 	//Qtot=(Qa+Qt);                                     % micro-metres^3.s^-1
-  double Qa = p.at("B1") * ( 2 * ( x_ion(Nal) + x_ion(Kl) - x_ion(Na) - x_ion(K) - x_ion(H) ) - p.at("CO20") + p.at("Ul") );
-  double Qb = p.at("B2") * ( 2 * ( x_ion(Na) + x_ion(K) + x_ion(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
-  double Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+//  double Qa = p.at("B1") * ( 2 * ( x_ion(Nal) + x_ion(Kl) - x_ion(Na) - x_ion(K) - x_ion(H) ) - p.at("CO20") + p.at("Ul") );
+//  double Qb = p.at("B2") * ( 2 * ( x_ion(Na) + x_ion(K) + x_ion(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+//  double Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+  double Qa, Qb, Qt;
+  compute_osmolarities(x_ion, Qa, Qb, Qt);
   double Qtot = Qa + Qt;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -365,4 +382,27 @@ void cCell_flow::secretion(double t, Array1IC& x_ion, Array1IC& dx_ion){
   dx_ion(Vb) = 100.0 * (     - JNaKb - JKb + JtK + JtNa);
 }
 
-//out << "<Cell_calcium> initial volume: " << volume << std::endl;
+void cCell_flow::compute_osmolarities(Array1IC& x_ion, double& Qa, double& Qb, double& Qt) {
+	//Qa = param.B1 * ( 2 * ( Nal + Kl - Na - K - H ) - param.CO20 + param.Ul );     % micro-metres^3.s^-1
+	//Qb = param.B2 * ( 2 * ( Na + K + H ) + param.CO20 - ...
+	//                      ( param.Nae + param.Ke + param.Cle + param.HCO3e ) );
+	//Qt = param.B3 * ( 2 * ( Nal + Kl ) + param.Ul - ....
+  Qa = p.at("B1") * ( 2 * ( x_ion(Nal) + x_ion(Kl) - x_ion(Na) - x_ion(K) - x_ion(H) ) - p.at("CO20") + p.at("Ul") );
+  Qb = p.at("B2") * ( 2 * ( x_ion(Na) + x_ion(K) + x_ion(H) ) + p.at("CO20") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+  Qt = p.at("B3") * ( 2 * ( x_ion(Nal) + x_ion(Kl) ) + p.at("Ul") - ( p.at("Nae") + p.at("Ke") + p.at("Cle") + p.at("HCO3e") ) );
+}
+
+void cCell_flow::save_results(std::ofstream& data_file)
+{
+  // computing Qtot and storing in output file too for use in post-processing (computing fluid flow)
+  double Qa, Qb, Qt;
+  compute_osmolarities(solvec, Qa, Qb, Qt);
+  double Qtot = Qa + Qt;
+
+  int nv = IONCOUNT + 1;
+  float* fbuf = new float[nv];  // +1 because we also store Qtot
+  for (int n = 0; n < IONCOUNT; n++) fbuf[n] = solvec[n]; // convert to float for reduced file size
+  fbuf[IONCOUNT] = Qtot;
+  data_file.write(reinterpret_cast<char*>(fbuf), nv * sizeof(float));
+  delete [] fbuf;
+}

@@ -34,7 +34,7 @@ CPP_FLAGS =  $(CPP_DEFS) -m64 -O3 -march=native -mtune=native -Wall -Wpedantic -
 #CPP_INCLUDES = -I/usr/include  # mahuika 
 CPP_INCLUDES = -I/usr/local/include/eigen3 # iMac
 
-CPP_LIBS = -lsundials_cvodes
+CPP_LIBS = -lsundials_cvode
 
 ###########################################################################################
 
