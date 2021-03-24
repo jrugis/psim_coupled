@@ -5,6 +5,7 @@ mpl.use('Agg') # because there's no X11 display
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import os
 import sys
 import struct
@@ -17,7 +18,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Create summary plot of psim5 simulation")
 parser.add_argument("--no-ca", action="store_true", help="Don't plot ca")
 parser.add_argument("--no-ip3", action="store_true", help="Don't plot ip3")
-parser.add_argument("--no-volume", action="store_false", help="(NOT WORKING) Don't plot volume")
+parser.add_argument("--no-ion", action="store_true", help="Don't plot ion results")
 parser.add_argument("--no-ffr", action="store_false", help="(NOT WORKING) Don't plot fluid flow rate")
 parser.add_argument("--cells", type=int, nargs='*', default=[1, 2, 3, 4, 5, 6, 7], help="Cells to plot (default is 1 2 3 4 5 6 7)")
 parser.add_argument("--nintra", type=int, default=8, help="Number of intracellular variables (default is 8)")
@@ -34,8 +35,8 @@ if not args.no_ca:
     dtypes.append("ca")
 if not args.no_ip3:
     dtypes.append("ip3")
-if not args.no_volume:
-    dtypes.append("volume")
+if not args.no_ion:
+    dtypes.append("ion")
 plot_ffr = False if args.no_ffr else True
 
 ##################################################################
@@ -65,19 +66,17 @@ _lib.load_summary_plot_data.argtypes = [
 # functions
 ##################################################################
 
-def get_data_fluid_flow(ntime):
-  fname = "l1_results.dat"
+def get_data_fluid_flow(fname, ntime):
   if not os.path.exists(fname):
-      return None, None
+    return None
 
-  data = np.loadtxt(fname)
-  assert data.shape[0] == ntime, "Wrong number of lines in fluid flow results"
+  # flow_names should match the solution_values enum in global_defs.hpp with Qtot appended
+  flow_names = ["Nal", "Kl", "Cll", "VOL", "Na", "K", "Cl", "HCO3", "H", "Va", "Vb", "Qtot"]
+  data = np.fromfile(fname, dtype=np.float32)  # load binary data
+  data = np.reshape(data, (ntime, len(flow_names)))  # reshape
+  df = pd.DataFrame(data=data, columns=flow_names)  # pandas dataframe with named columns
 
-  vol_cols = [i * nintra + 0 for i in args.cells]
-  volumes = data[:, vol_cols]
-  ffr = data[:, -1]
-
-  return volumes, ffr
+  return df
 
 ## get the time values associated with the saved data
 def get_time_vals(fname):
@@ -116,24 +115,17 @@ def get_node_count(fname):
 # get the x-axis time values
 x = get_time_vals("a1")
 
-# load fluid flow results
-if plot_ffr or "volume" in dtypes:
-    volumes, ffr = get_data_fluid_flow(x.shape[0])
-    # if fluid flow was disabled don't plot it
-    if volumes is None and ffr is None:
-        print("Warning: disabling fluid flow and volume plotting since no lumen results file exists")
-        plot_ffr = False
-        if "volume" in dtypes:
-            dtypes.remove("volume")
-
 print("create summary plot")
 
 nplots = len(dtypes) + 1 if plot_ffr else len(dtypes)
+if "ion" in dtypes:
+    nplots += 4
 fig, plots = plt.subplots(nplots, ncells, sharex='col', squeeze=False)
 plt.subplots_adjust(wspace = 0.5)
 #fig.set_size_inches(ncells * 3.8, nplots * 2.5)
 fig.set_size_inches(ncells * 7.6, nplots * 5.0)
 fig.text(0.02, 0.96, os.getcwd(), fontsize=20)
+ylabels = ["" for _ in range(nplots)]
 
 # main loop over plots
 for celli, cell in enumerate(args.cells):
@@ -143,7 +135,7 @@ for celli, cell in enumerate(args.cells):
   if celli == 0 and plot_ffr:
     pass
   else:
-    plots[len(dtypes)-1, celli].set_xlabel(" time (s)")
+    plots[-1, celli].set_xlabel(" time (s)")
   plots[0, celli].set_title("Cell " + str(cell))
 
   # load ca and ip3 data
@@ -184,6 +176,7 @@ for celli, cell in enumerate(args.cells):
       plots[ca_index, celli].plot(x, ca_apical, color='blue', label='apical')
       plots[ca_index, celli].plot(x, ca_basal, color='red', label='basal')
       plots[ca_index, celli].legend(loc='best')
+      ylabels[ca_index] = "ca ($\mu$M)"
 
   # plot ip3
   if "ip3" in dtypes:
@@ -191,17 +184,56 @@ for celli, cell in enumerate(args.cells):
       plots[ip_index, celli].plot(x, ip_apical, color='blue', label='apical')
       plots[ip_index, celli].plot(x, ip_basal, color='red', label='basal')
       plots[ip_index, celli].legend(loc='best')
+      ylabels[ip_index] = "ip3 ($\mu$M)"
 
-  # plot volumes
-  if "volume" in dtypes:
-      vol_index = dtypes.index("volume")
-      plots[vol_index, celli].plot(x, volumes[:, celli], color='blue')
+  # load fluid flow results
+  if plot_ffr or "ion" in dtypes:
+      iondf = get_data_fluid_flow(f"{dname}_ion.bin", x.shape[0])
+      # if fluid flow was disabled don't plot it
+      if iondf is None:
+          print("Warning: disabling fluid flow and volume plotting since no lumen results file exists")
+          plot_ffr = False
+          if "ion" in dtypes:
+              dtypes.remove("ion")
 
-for i, dtype in enumerate(dtypes):
-    if dtype == 'volume':
-        plots[i, 0].set_ylabel(dtype + " ($\mu$m$^3$)")
-    else:
-        plots[i, 0].set_ylabel(dtype + " ($\mu$M)")
+  # plot flow results
+  if "ion" in dtypes:
+      flow_start_index = dtypes.index("ion")
+
+      # first plot volume
+      plots[flow_start_index+0, celli].plot(x, iondf["VOL"], color='blue')
+      ylabels[flow_start_index+0] = "volume ($\mu$m$^3$)"
+      # next plot Nal, Kl, Cll
+      plots[flow_start_index+1, celli].plot(x, iondf["Nal"], color='blue', label="Nal")
+      plots[flow_start_index+1, celli].plot(x, iondf["Kl"], color='red', label="Kl")
+      plots[flow_start_index+1, celli].plot(x, iondf["Cll"], color='green', label="Cll")
+      plots[flow_start_index+1, celli].legend(loc='best')
+      ylabels[flow_start_index+1] = "?"
+      # next plot Na, K, Cl
+      plots[flow_start_index+2, celli].plot(x, iondf["Na"], color='blue', label="Na")
+      plots[flow_start_index+2, celli].plot(x, iondf["K"], color='red', label="K")
+      plots[flow_start_index+2, celli].plot(x, iondf["Cl"], color='green', label="Cl")
+      plots[flow_start_index+2, celli].legend(loc='best')
+      ylabels[flow_start_index+2] = "?"
+      # next plot Va, Vb
+      plots[flow_start_index+3, celli].plot(x, iondf["Va"], color='blue', label="Va")
+      plots[flow_start_index+3, celli].plot(x, iondf["Vb"], color='red', label="Vb")
+      plots[flow_start_index+3, celli].legend(loc='best')
+      ylabels[flow_start_index+3] = "?"
+      # next plot FFR (Qtot??)
+      plots[flow_start_index+4, celli].plot(x, iondf["Qtot"], color='blue')
+      ylabels[flow_start_index+4] = "Qtot (FFR?)"
+
+
+for i in range(nplots):
+    plots[i, 0].set_ylabel(ylabels[i])
+
+#for i, dtype in enumerate(dtypes):
+#
+#    if dtype == 'volume':
+#        plots[i, 0].set_ylabel(dtype + " ($\mu$m$^3$)")
+#    else:
+#        plots[i, 0].set_ylabel(dtype + " ($\mu$M)")
 
 if plot_ffr:
   for i in range(1, ncells):
