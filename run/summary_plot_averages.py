@@ -19,7 +19,8 @@ parser = argparse.ArgumentParser(description="Create summary plot of psim5 simul
 parser.add_argument("--no-ca", action="store_true", help="Don't plot ca")
 parser.add_argument("--no-ip3", action="store_true", help="Don't plot ip3")
 parser.add_argument("--no-ion", action="store_true", help="Don't plot ion results")
-parser.add_argument("--no-ffr", action="store_false", help="(NOT WORKING) Don't plot fluid flow rate")
+#parser.add_argument("--no-ffr", action="store_false", help="(NOT WORKING) Don't plot fluid flow rate")
+parser.add_argument("--time-start", type=int, default=0, help="Starting time to display on graphs (default=0)")
 parser.add_argument("--cells", type=int, nargs='*', default=[1, 2, 3, 4, 5, 6, 7], help="Cells to plot (default is 1 2 3 4 5 6 7)")
 parser.add_argument("--nintra", type=int, default=8, help="Number of intracellular variables (default is 8)")
 parser.add_argument("--font-size", type=int, default=16, help="Font size for matplotlib (default is 16)")
@@ -37,7 +38,8 @@ if not args.no_ip3:
     dtypes.append("ip3")
 if not args.no_ion:
     dtypes.append("ion")
-plot_ffr = False if args.no_ffr else True
+#plot_ffr = False if args.no_ffr else True
+plot_ffr = False
 
 ##################################################################
 # ctypes lib for loading data
@@ -224,6 +226,9 @@ for celli, cell in enumerate(args.cells):
       plots[flow_start_index+4, celli].plot(x, iondf["Qtot"], color='blue')
       ylabels[flow_start_index+4] = "Qtot (FFR?)"
 
+# setting limit
+for (m,n), subplot in np.ndenumerate(plots):
+    subplot.set_xlim(args.time_start)
 
 for i in range(nplots):
     plots[i, 0].set_ylabel(ylabels[i])
