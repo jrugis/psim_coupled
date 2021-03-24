@@ -62,6 +62,7 @@ class cCell_calcium {
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
   std::unordered_map<std::string, double> p;
   std::vector<cfc> cells; // vector of connected cells and face counts
+  double volume_term1, volume_term2; // coupling flow
 
   Eigen::Array<double, Eigen::Dynamic, MODELECOUNT> element_data;
   Eigen::Array<double, Eigen::Dynamic, MODELSCOUNT> surface_data;

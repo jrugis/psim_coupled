@@ -95,10 +95,16 @@ struct sMeshVals {
 // thermodynamic constants
 #define R 8.314462100000000
 #define T 310
-#define F 9.645833650000000e4
-const double RTF = 1000.0 * R * T / F;
+//#define F_CONST 9.645833650000000e4  // _CONST because F is used in SUNDIALS already??
+#define F_CONST 9.648533650000000e4  // _CONST because F is used in SUNDIALS already??
+const double RTF = 1000.0 * R * T / F_CONST;
 
 //************************************************************************
 //************************************************************************
+// secretion solution values
+enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
+// some convenience typedefs
+typedef Eigen::Array<double, 1, IONCOUNT> Array1IC;
+
 
 #endif /* DEFS_H_ */

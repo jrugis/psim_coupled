@@ -11,33 +11,41 @@
 #include <fstream>
 #include <string>
 #include <unordered_map>
+#include "global_defs.hpp"
+#include "cCVode.hpp"
+#include "cLSODA.hpp"
+
 
 class cCell_calcium;
 
-enum solution_values { Nal, Kl, Cll, VOL, Na, K, Cl, HCO3, H, Va, Vb, IONCOUNT }; // solution vector components
 class constant_values {                                                           // invariant cell properties
   public:
-  double aNaK, aNkcc1, GtNa, GtK, GCl, GK, G1, G4, GB, St, Sb, Sa, V0;
+  double aNaK, aNkcc1, GtNa, GtK, GCl, GK, G1, G4, GB, St, Sb, Sa, V0, wl;
 };
-
-// some convenience typedefs
-typedef Eigen::Array<double, 1, IONCOUNT> Array1IC;
 
 class cCell_flow {
   public:
   cCell_flow(cCell_calcium* parent);
   ~cCell_flow();
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW   // required when using fixed-size vectorizable Eigen object(s)
-  void step();
+  Array1IC solvec, prev_solvec, dsolvec, prev_dsolvec;   // solution vectors for ions
+  void step(double t, double dt);
+  void secretion(double t, Array1IC& x_ion, Array1IC& dx_ion);
+  void save_results();
 
   private:
   cCell_calcium* parent;
   std::unordered_map<std::string, double> p;
   //int cell_number;
-  Array1IC solvec, prev_solvec;   // solution vectors for ions
   constant_values s;              // secretion constants vector
+  bool solver_initialised;
+  cCVode* cvode_solver;
+  cLSODA* lsoda_solver;
+  std::ofstream ion_file;
   void init_solvec();
   void init_const();
+  void init_solver();
+  void compute_osmolarities(Array1IC& x_ion, double& Qa, double& Qb, double& Qt);
 };
 
 #endif /* CCELL_FLOW_H_ */
