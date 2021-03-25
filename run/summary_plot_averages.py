@@ -203,7 +203,8 @@ for celli, cell in enumerate(args.cells):
       flow_start_index = dtypes.index("ion")
 
       # first plot volume
-      plots[flow_start_index+0, celli].plot(x, iondf["VOL"], color='blue')
+      plots[flow_start_index+0, celli].plot(x, iondf["VOL"], color='blue', label="volume")
+      plots[flow_start_index+0, celli].legend(loc='best')
       ylabels[flow_start_index+0] = "volume ($\mu$m$^3$)"
       # next plot Nal, Kl, Cll
       plots[flow_start_index+1, celli].plot(x, iondf["Nal"], color='blue', label="Nal")
@@ -223,22 +224,17 @@ for celli, cell in enumerate(args.cells):
       plots[flow_start_index+3, celli].legend(loc='best')
       ylabels[flow_start_index+3] = "?"
       # next plot FFR (Qtot??)
-      plots[flow_start_index+4, celli].plot(x, iondf["Qtot"], color='blue')
-      ylabels[flow_start_index+4] = "Qtot (FFR?)"
+      plots[flow_start_index+4, celli].plot(x, iondf["Qtot"], color='blue', label="Qtot")
+      plots[flow_start_index+4, celli].legend(loc='best')
+      ylabels[flow_start_index+4] = "Qtot (QFFR?)"
 
-# setting limit
+# setting x axis (time) lower limit
 for (m,n), subplot in np.ndenumerate(plots):
     subplot.set_xlim(args.time_start)
 
+# setting y axis labels
 for i in range(nplots):
     plots[i, 0].set_ylabel(ylabels[i])
-
-#for i, dtype in enumerate(dtypes):
-#
-#    if dtype == 'volume':
-#        plots[i, 0].set_ylabel(dtype + " ($\mu$m$^3$)")
-#    else:
-#        plots[i, 0].set_ylabel(dtype + " ($\mu$M)")
 
 if plot_ffr:
   for i in range(1, ncells):
