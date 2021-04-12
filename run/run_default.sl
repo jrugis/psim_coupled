@@ -28,5 +28,5 @@ srun --ntasks=8 psim_coupled
 #rm psim_coupled
 
 ml Python/3.8.2-gimkl-2020a
-srun --ntasks=1 python "summary_plot.py"
-rm summary_plot.py
+srun --ntasks=1 python "SCRIPT_DIR/summary_plot.py"
+srun --ntasks=1 python "SCRIPT_DIR/summary_plot_averages.py"
