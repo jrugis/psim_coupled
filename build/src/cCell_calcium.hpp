@@ -1,7 +1,7 @@
 /*
  * cCell_calcium.hpp
  *
- *  Created on: 11/11/2020double
+ *  Created on: 11/11/2020
  *      Author: jrugis
  */
 
@@ -21,13 +21,13 @@ class cCell_flow;
 #include "global_defs.hpp"
 
 #define DIFVARS 3 // number of diffusing node variables - c, ip, ce
-//#define NONDIFVARS 2 // number of non-diffusing variables - g, h
-#define NONDIFVARS 1 // number of non-diffusing variables - h
+#define NONDIFVARS 2 // number of non-diffusing variables - g, h
+//#define NONDIFVARS 1 // number of non-diffusing variables - h
 #define VARIABLES (DIFVARS + NONDIFVARS) // total number of node variables
 #define REF_MASS_SIZE 4 // reference mass dimension
 
-//enum model_element_values { VOL_e, RYR_e, PLC_e, MODELECOUNT }; // element volume and spatial factors
-enum model_element_values { VOL_e, PLC_e, MODELECOUNT };        // element volume and spatial factors
+enum model_element_values { VOL_e, RYR_e, PLC_e, MODELECOUNT }; // element volume and spatial factors
+//enum model_element_values { VOL_e, PLC_e, MODELECOUNT };        // element volume and spatial factors
 enum model_surface_values { AREA_s, MODELSCOUNT };              // surface triangle area
 enum model_node_values { BOOL_apical, MODELNCOUNT };            // apical (boolean)
 
@@ -79,10 +79,10 @@ class cCell_calcium {
   //MatrixN1d make_load(double delta_time, bool plc);
   MatrixN1d make_load(bool plc);
   ArrayRefMass make_ref_mass();
-  //Array1VC get_body_reactions(double c, double ip, double ce, double g, double ryr_f, double plc_f);
-  Array1VC get_body_reactions(double c, double ip, double ce, double plc_f);
+  Array1VC get_body_reactions(double c, double ip, double ce, double g, double ryr_f, double plc_f);
+  //Array1VC get_body_reactions(double c, double ip, double ce, double plc_f);
   Array1VC get_apical_reactions(double c, double ip, double ce, double h);
-  //double get_g_reaction(double c, double g); // RYR dynamics
+  double get_g_reaction(double c, double g); // RYR dynamics
   double get_h_reaction(double c, double h); // IPR dynamics (apical)
 };
 

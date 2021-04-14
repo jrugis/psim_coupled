@@ -61,6 +61,28 @@ k_IPR      45.0
 k_IPR_min  0.0
 #-----------------
 #
+# h - IPR dynamics
+#
+K_tau   0.1
+tau_max 1000
+#-----------------
+#
+# RYR parameters
+#
+V_RyR  0.0  # was 0.15, 0.0 turns RYR off
+K_RyR  0.2
+K_RyR2 17.0
+m_RyR  0.0
+n_RyR  4.0
+#-----------------
+#
+# g - RYR dynamics
+#
+g0     0.608
+K_hRyR 0.15
+tau    1.0
+#-----------------
+#
 # Serca parameters
 #
 V_p   0.9
@@ -81,18 +103,17 @@ K_PLC  0.07
 K3K    0.4
 #-----------------
 #
-# h - IPR dynamics
-#
-K_tau   0.1
-tau_max 1000
-#-----------------
-#
 # spatial distribution distances
-# 
-IPRds  0.8  # IPR (defines apical region)
+#
+IPRds  0.8  # IPR (effectively defines the apical region)
 IPRdl  1.2
-PLCds  0.8  # PLC
-PLCdl  1.2
+#
+# NOTE: RYR distribution ramps up from apical
+d_RYR  1.0  # RYR ramp-up distance from apical
+#
+# NOTE: PLC step distribution is close to basal with keep-away from apical
+PLCds  0.8  # PLC step distance from basal
+PLCdl  1.2  # PLC keep-away distance from apical
 #
 ##############################################################
 # FLUID FLOW PARAMETERS

@@ -90,15 +90,12 @@ void cCell_calcium::init_solvec()
   prev_solvec.block(2 * np, 0, np, 1) = MatrixN1d().Constant(np, 1, p.at("ce0"));
   solvec = prev_solvec;
 
-  //nd_solvec.resize(NONDIFVARS * np, 1); // NOTE: the variable ordering is g, h
-  //prev_nd_solvec.resize(NONDIFVARS * np, 1);
-  //prev_nd_solvec.block(0, 0, np, 1) = MatrixN1d().Constant(np, 1, p.at("g0"));
-  //prev_nd_solvec.block(np, 0, np, 1) = MatrixN1d().Constant(np, 1, 0.0); // default to 0.0
-  nd_solvec.resize(NONDIFVARS * np, 1); // variable h
+  nd_solvec.resize(NONDIFVARS * np, 1); // NOTE: the variable ordering is g, h
   prev_nd_solvec.resize(NONDIFVARS * np, 1);
-  prev_nd_solvec.block(0, 0, np, 1) = MatrixN1d().Constant(np, 1, p.at("h0")); 
+  prev_nd_solvec.block(0, 0, np, 1) = MatrixN1d().Constant(np, 1, p.at("g0"));
+  prev_nd_solvec.block(np, 0, np, 1) = MatrixN1d().Constant(np, 1, 0.0); // h defaults to 0.0
   for (int n = 0; n < np; n++) {
-    if (node_data(n, BOOL_apical) == 1.0) { // apical nodes only
+    if (node_data(n, BOOL_apical) == 1.0) { // h non-zero at apical nodes only
       prev_nd_solvec(n) = p.at("h0");
     }
   }
@@ -158,7 +155,7 @@ void cCell_calcium::make_matrices()
     element_data(n, VOL_e) = V; // save the tetrahedron volume
 
     // RyR and PLC spatial factors per element
-    //element_data(n, RYR_e) = ((mesh->e_dfa[n] < p.at("d_RyR")) ? (mesh->e_dfa[n] / p.at("d_RyR")) : 1.0);
+    element_data(n, RYR_e) = ((mesh->e_dfa[n] < p.at("d_RyR")) ? (mesh->e_dfa[n] / p.at("d_RyR")) : 1.0);
     element_data(n, PLC_e) = (mesh->e_dfb[n] < p.at("PLCds") && mesh->e_dfa[n] > p.at("PLCdl")) ? 1.0 : 0.0;
 
     double Ic = V * p.at("Dc"); // diffusion coefficients
@@ -287,11 +284,11 @@ Array1VC cCell_calcium::get_apical_reactions(double c, double ip, double ce, dou
   return reactions;
 }
 
-//double cCell_calcium::get_g_reaction(double c, double g)
-//{ // RYR dynamics
-//  double ginf = pow(p.at("K_hRyR"), 2) / (pow(p.at("K_hRyR"), 2) + pow(c, 2));
-//  return (ginf - g) / p.at("tau");
-//}
+double cCell_calcium::get_g_reaction(double c, double g)
+{ // RYR dynamics
+  double ginf = pow(p.at("K_hRyR"), 2) / (pow(p.at("K_hRyR"), 2) + pow(c, 2));
+  return (ginf - g) / p.at("tau");
+}
 
 double cCell_calcium::get_h_reaction(double c, double h)
 { // IPR dynamics
@@ -300,13 +297,13 @@ double cCell_calcium::get_h_reaction(double c, double h)
   return (hinf - h) / htau;
 }
 
-//Array1VC cCell_calcium::get_body_reactions(double c, double ip, double ce, double g, double ryr_f, double plc_f)
-Array1VC cCell_calcium::get_body_reactions(double c, double ip, double ce, double plc_f)
+Array1VC cCell_calcium::get_body_reactions(double c, double ip, double ce, double g, double ryr_f, double plc_f)
+//Array1VC cCell_calcium::get_body_reactions(double c, double ip, double ce, double plc_f)
 {
   double J_SERCA = p.at("V_p") * (pow(c, 2) - p.at("K_bar") * pow(ce, 2)) / (pow(p.at("k_p"), 2) + pow(c, 2));
-  //double J_RYR = ryr_f * p.at("V_RyR") * (pow(c, p.at("n_RyR")) / (pow(c, p.at("n_RyR")) + pow(p.at("K_RyR"), p.at("n_RyR")))) *
-  //               (pow(ce, p.at("m_RyR")) / (pow(ce, p.at("m_RyR")) + pow(p.at("K_RyR2"), p.at("m_RyR")))) * g;
-  double J_RYR = 0.0;
+  double J_RYR = ryr_f * p.at("V_RyR") * (pow(c, p.at("n_RyR")) / (pow(c, p.at("n_RyR")) + pow(p.at("K_RyR"), p.at("n_RyR")))) *
+	             (pow(ce, p.at("m_RyR")) / (pow(ce, p.at("m_RyR")) + pow(p.at("K_RyR2"), p.at("m_RyR")))) * g;
+  //double J_RYR = 0.0;
   double vplc = plc_f * p.at("V_PLC") * pow(c, 2) / (pow(p.at("K_PLC"), 2) + pow(c, 2));
   double vdeg = (p.at("V_5K") + (p.at("V_3K") * pow(c, 2)) / (pow(p.at("K3K"), 2) + pow(c, 2))) * ip;
 
@@ -332,9 +329,9 @@ MatrixN1d cCell_calcium::make_load(bool plc)
   c = prev_solvec.block(0, 0, np, 1);
   ip = prev_solvec.block(np, 0, np, 1);
   ce = prev_solvec.block(2 * np, 0, np, 1);
-  //g = prev_nd_solvec.block(0, 0, np, 1);
-  //h = prev_nd_solvec.block(np, 0, np, 1); // note: only apical (surface) nodes used
-  h = prev_nd_solvec.block(0, 0, np, 1); // note: only apical (surface) nodes used
+  g = prev_nd_solvec.block(0, 0, np, 1);
+  h = prev_nd_solvec.block(np, 0, np, 1); // note: only apical (surface) nodes used
+  //h = prev_nd_solvec.block(0, 0, np, 1); // note: only apical (surface) nodes used
 
   load_c = load_c.Zero(np, 1);
   load_ip = load_ip.Zero(np, 1);
@@ -349,12 +346,12 @@ MatrixN1d cCell_calcium::make_load(bool plc)
     double cav = 0.25 * (c(vi(0)) + c(vi(1)) + c(vi(2)) + c(vi(3)));
     double ipav = 0.25 * (ip(vi(0)) + ip(vi(1)) + ip(vi(2)) + ip(vi(3)));
     double ceav = 0.25 * (ce(vi(0)) + ce(vi(1)) + ce(vi(2)) + ce(vi(3)));
-    //double gav = 0.25 * (g(vi(0)) + g(vi(1)) + g(vi(2)) + g(vi(3)));
+    double gav = 0.25 * (g(vi(0)) + g(vi(1)) + g(vi(2)) + g(vi(3)));
 
-    //Array1VC reactions =
-    //  get_body_reactions(cav, ipav, ceav, gav, double(element_data(n, RYR_e)), double(plc ? element_data(n, PLC_e) : 0.0));
     Array1VC reactions =
-      get_body_reactions(cav, ipav, ceav, double(plc ? element_data(n, PLC_e) : 0.0));
+	  get_body_reactions(cav, ipav, ceav, gav, double(element_data(n, RYR_e)), double(plc ? element_data(n, PLC_e) : 0.0));
+    //Array1VC reactions =
+    //  get_body_reactions(cav, ipav, ceav, double(plc ? element_data(n, PLC_e) : 0.0));
 
     for (int i = 0; i < 4; i++) {                                    // for each tetrahedron vertex
       load_c(vi(i)) += element_data(n, VOL_e) * 0.25 * reactions(0); // reaction terms, scaled by 1/4 volume
@@ -398,16 +395,16 @@ MatrixN1d cCell_calcium::solve_nd(double dt)
   MatrixN1d svec;
 
   c = prev_solvec.block(0, 0, np, 1);
-  //g = prev_nd_solvec.block(0, 0, np, 1);
-  //h = prev_nd_solvec.block(np, 0, np, 1); // note: only apical (surface) nodes used
-  h = prev_nd_solvec.block(0, 0, np, 1); // note: only apical (surface) nodes used
+  g = prev_nd_solvec.block(0, 0, np, 1);
+  h = prev_nd_solvec.block(np, 0, np, 1); // note: only apical (surface) nodes used
+  //h = prev_nd_solvec.block(0, 0, np, 1); // note: only apical (surface) nodes used
   svec.resize(NONDIFVARS * np, Eigen::NoChange);
 
   for (int n = 0; n < np; n++) {                               // for each node...
-    //svec(n) = g(n) + (dt * get_g_reaction(c(n), g(n)));        // g
+	svec(n) = g(n) + (dt * get_g_reaction(c(n), g(n)));        // g
     if (node_data(n, BOOL_apical) == 1.0) {                    // only the apical nodes
-      //svec(np + n) = h(n) + (dt * get_h_reaction(c(n), h(n))); // h
-	  svec(n) = h(n) + (dt * get_h_reaction(c(n), h(n))); // h
+	  svec(np + n) = h(n) + (dt * get_h_reaction(c(n), h(n))); // h
+	  //svec(n) = h(n) + (dt * get_h_reaction(c(n), h(n))); // h
     }
   }
   return svec;
@@ -454,8 +451,8 @@ void cCell_calcium::run()
   while (true) {
     step++;
     prev_solvec = solvec;       // c, ip, ce
-    //prev_nd_solvec = nd_solvec; // g, h
-    prev_nd_solvec = nd_solvec; // h
+    prev_nd_solvec = nd_solvec; // g, h
+    //prev_nd_solvec = nd_solvec; // h
 
     // get current time and time step value from acinus
     MPI_CHECK(MPI_Recv(&msg, ACCOUNT, MPI_FLOAT, acinus_rank, ACINUS_CELL_TAG, MPI_COMM_WORLD, &stat));
