@@ -55,16 +55,6 @@ def get_data_fluid_flow(fname, ntime):
 
   return df
 
-def get_data_fluid_flow_matlab(fname):
-    if not os.path.exists(fname):
-        return None
-
-    import hdf5storage
-
-    data = hdf5storage.loadmat(fname)
-    data = data["ion_tot"][0,0]
-
-
 ## get the time values associated with the saved data
 def get_time_vals(fname):
   f = open(fname + ".dat", "r") # get the saved data stride
@@ -116,6 +106,7 @@ def main():
     # parse command line arguments
     parser = argparse.ArgumentParser(description="Create summary plot of psim5 simulation")
     parser.add_argument("--no-ca", action="store_true", help="Don't plot ca")
+    parser.add_argument("--no-cer", action="store_true", help="Don't plot cer")
     parser.add_argument("--no-ip3", action="store_true", help="Don't plot ip3")
     parser.add_argument("--no-ion", action="store_true", help="Don't plot ion results")
     #parser.add_argument("--no-ffr", action="store_false", help="(NOT WORKING) Don't plot fluid flow rate")
@@ -133,6 +124,8 @@ def main():
     dtypes = []
     if not args.no_ca:
         dtypes.append("ca")
+    if not args.no_cer:
+        dtypes.append("cer")
     if not args.no_ip3:
         dtypes.append("ip3")
     if not args.no_ion:
@@ -167,7 +160,7 @@ def main():
       plots[0, celli].set_title("Cell " + str(cell))
 
       # load ca and ip3 data
-      if "ca" in dtypes or "ip3" in dtypes:
+      if "ca" in dtypes or "cer" in dtypes or "ip3" in dtypes:
           # first we load the list of apical and basal nodes
           apical_nodes = np.fromfile("apical_nodes_{}.bin".format(dname), dtype=np.int32)
           basal_nodes = np.fromfile("basal_nodes_{}.bin".format(dname), dtype=np.int32)
@@ -180,6 +173,18 @@ def main():
               ca_basal = np.empty(x.shape[0], np.float32)
               filename = dname + "_ca.bin"
               status = _lib.load_summary_plot_data(filename.encode("utf-8"), x.shape[0], nodes, ca_apical, ca_basal,
+                      len(apical_nodes), apical_nodes, len(basal_nodes), basal_nodes)
+              if status < 0:
+                  sys.exit("Error open result file: {}".format(result_file))
+              if status > 0:
+                  sys.exit("Error reading row in result file: {}".format(status))
+
+          if "cer" in dtypes:
+              # for cer
+              cer_apical = np.empty(x.shape[0], np.float32)
+              cer_basal = np.empty(x.shape[0], np.float32)
+              filename = dname + "_cer.bin"
+              status = _lib.load_summary_plot_data(filename.encode("utf-8"), x.shape[0], nodes, cer_apical, cer_basal,
                       len(apical_nodes), apical_nodes, len(basal_nodes), basal_nodes)
               if status < 0:
                   sys.exit("Error open result file: {}".format(result_file))
@@ -205,6 +210,14 @@ def main():
           plots[ca_index, celli].plot(x, ca_basal, color='red', label='basal')
           plots[ca_index, celli].legend(loc='best')
           ylabels[ca_index] = "ca ($\mu$M)"
+
+      # plot cer
+      if "cer" in dtypes:
+          cer_index = dtypes.index("cer")
+          plots[cer_index, celli].plot(x, cer_apical, color='blue', label='apical')
+          plots[cer_index, celli].plot(x, cer_basal, color='red', label='basal')
+          plots[cer_index, celli].legend(loc='best')
+          ylabels[cer_index] = "cer ($\mu$M)"
 
       # plot ip3
       if "ip3" in dtypes:
