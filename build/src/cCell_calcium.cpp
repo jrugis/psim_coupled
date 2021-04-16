@@ -31,7 +31,7 @@ cCell_calcium::cCell_calcium(std::string host_name, int my_rank, int a_rank)
 
   utils::get_parameters(acinus_id, cell_number, p, out);
   // add dependant parameters to the parameters map
-  p["ce0"] = (p.at("ct") - p.at("c0")) / p.at("Gamma");
+  p["ce0"] = (p.at("ct") * (1.0 + p.at("Gamma")) - p.at("c0")) / p.at("Gamma");
   p["h0"] = pow(p.at("K_h"), 4) / (pow(p.at("K_h"), 4) + pow(p.at("c0"), 4));
 
   // add dependant default parameters to the parameters map if not already defined
